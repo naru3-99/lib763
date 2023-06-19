@@ -18,8 +18,11 @@ def get_all_file_path_in(target_dir: str) -> list:
         [string]=対象ディレクトリ内のすべてのパス
     指定したディレクトリ内のすべてのファイルのパスを取得
     """
-    paths = glob.glob(target_dir + "/**/*", recursive=True)
-    return [path for path in paths if (os.path.isfile(path))]
+    return [
+        path
+        for path in glob.glob(target_dir + "/**/*", recursive=True)
+        if (os.path.isfile(path))
+    ]
 
 
 def get_all_dir_path_in(target_dir: str) -> list:
@@ -30,8 +33,11 @@ def get_all_dir_path_in(target_dir: str) -> list:
         [string]=対象ディレクトリ内のすべてのサブディレクトリ
     指定したディレクトリ内のすべてのサブディレクトリを取得
     """
-    paths = glob.glob(target_dir + "/*/", recursive=True)
-    return [path for path in paths if (os.path.isdir(path))]
+    return [
+        path
+        for path in glob.glob(target_dir + "/*/", recursive=True)
+        if (os.path.isdir(path))
+    ]
 
 
 def get_all_folder_name_in_nextdir(target_dir: str) -> list:
@@ -45,7 +51,7 @@ def get_all_folder_name_in_nextdir(target_dir: str) -> list:
     return [
         entry
         for entry in os.listdir(target_dir)
-        if os.path.isfile(os.path.join(target_dir, entry))
+        if os.path.isdir(os.path.join(target_dir, entry))
     ]
 
 
@@ -61,7 +67,7 @@ def get_all_file_in_nextdir(target_dir: str) -> list:
     return [
         entry
         for entry in os.listdir(target_dir)
-        if os.path.isdir(os.path.join(target_dir, entry))
+        if os.path.isfile(os.path.join(target_dir, entry))
     ]
 
 
