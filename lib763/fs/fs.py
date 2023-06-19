@@ -56,9 +56,9 @@ def get_len_of_dir_in(target_dir: str) -> int:
         target_dir=(string)対象とするディレクトリ
     @return:
         int
-    ディレクトリの中にあるサブディレクトリの数を返す
+    ディレクトリの中にあるディレクトリの数を返す
     """
-    return len(get_all_subdir_in(target_dir))
+    return len(get_all_dir_path_in(target_dir))
 
 
 def get_len_of_file_in(target_dir: str) -> int:
