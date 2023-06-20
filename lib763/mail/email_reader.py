@@ -9,6 +9,14 @@ class email_reader:
     def __init__(
         self, username: str, password: str, imap_address="imap.gmail.com", search_days=7
     ) -> None:
+        """
+        コンストラクタ
+        @param:
+            username: (str) ユーザー名
+            password: (str) パスワード
+            imap_address: (str) IMAPサーバーアドレス
+            search_days: (int) 検索対象とする日数
+        """
         self.username = username
         self.password = password
         self.imap_address = imap_address
@@ -17,7 +25,7 @@ class email_reader:
 
     def __init_imap(self) -> None:
         """
-        @todo:self.imapの初期化
+        IMAP接続を初期化する
         """
         self.imap = imaplib.IMAP4_SSL(self.imap_address)
         self.imap.login(self.username, self.password)
@@ -25,12 +33,11 @@ class email_reader:
 
     def __search_mail(self, criteria: str) -> list:
         """
-        @param
-            criteria:str
-        @return
-            list[msg] _AnyResPonseData
-        @todo
-        指定されたクリテリアに従ったメールを取得
+        指定されたクリテリアに基づいてメールを検索する
+        @param:
+            criteria: (str) 検索条件
+        @return:
+            (list[msg]) メールのリスト
         """
         status, messages = self.imap.search(None, criteria)
         messages = messages[0].split(b" ")
@@ -52,26 +59,22 @@ class email_reader:
 
     def get_msgs_by(self, criteria: str) -> list:
         """
-        @param
-            criteria:str
-        @return
-            list[msg] _AnyResPonseData
-        @todo
-        msgのリストを取得する
-        このmsgたちに、各メゾットを適用して
-        メールの内容を取得する
+        指定されたクリテリアに基づいてメールのリストを取得する
+        @param:
+            criteria: (str) 検索条件
+        @return:
+            (list[msg]) メールのリスト
         """
         self.__init_imap()
         return self.__search_mail(criteria)
 
     def get_datetime(self, msg) -> datetime:
         """
-        @param
-            msg = _AnyResPonseData
-        @return
-            datetime object
-        @todo
-            メールが送信された日時のdatetimeオブジェクトを取得
+        メールが送信された日時のdatetimeオブジェクトを取得する
+        @param:
+            msg: メールオブジェクト
+        @return:
+            (datetime) 送信日時のdatetimeオブジェクト
         """
         date_str = msg["Date"]
         date_ls = date_str.split(",")[1].split(" ")[1:4]
@@ -85,24 +88,22 @@ class email_reader:
 
     def get_time_stamp(self, msg) -> str:
         """
-        @param
-            msg = _AnyResPonseData
-        @return
-            str = timestamp str
-        @todo
-            メールが送信された日時の文字列を取得する
+        メールが送信された日時の文字列を取得する
+        @param:
+            msg: メールオブジェクト
+        @return:
+            (str) 送信日時の文字列
         """
         date_obj = self.get_datetime(msg)
         return date_obj.strftime("%Y-%m-%d-%H-%M-%S")
 
     def get_body_str(self, msg) -> str | None:
         """
-        @param
-            msg = _AnyResPonseData
-        @return
-            str = メールの本文
-        @todo
-            メールの本文を取得する
+        メールの本文を取得する
+        @param:
+            msg: メールオブジェクト
+        @return:
+            (str) メールの本文
         """
         if msg.is_multipart() is False:
             payload = msg.get_payload(decode=True)
@@ -125,12 +126,11 @@ class email_reader:
 
     def get_subject(self, msg) -> str:
         """
-        @param
-            msg = _AnyResPonseData
-        @return
-            str = メールのタイトル
-        @todo
-            メールのタイトルを取得する
+        メールのタイトルを取得する
+        @param:
+            msg: メールオブジェクト
+        @return:
+            (str) メールのタイトル
         """
         subject = decode_header(msg["Subject"])[0][0]
         if isinstance(subject, bytes):
@@ -139,13 +139,12 @@ class email_reader:
 
     def save_attachment(self, path: str, msg) -> str | None:
         """
-        @param
-            path = str 保存するパス
-            msg = _AnyResPonseData
-        @return
-            str = 保存したファイルのパス
-        @todo
-            添付ファイルを保存する
+        添付ファイルを保存する
+        @param:
+            path: (str) 保存先のパス
+            msg: メールオブジェクト
+        @return:
+            (str) 保存したファイルのパス
         """
         for part in msg.walk():
             file_name = part.get_filename()
@@ -162,7 +161,7 @@ class email_reader:
 
     def exit(self):
         """
-        self.imapの終了処理をおこなう
+        IMAP接続を終了する
         """
         self.imap.close()
         self.imap.logout()

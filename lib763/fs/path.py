@@ -13,10 +13,10 @@ from lib763.fs.save_load import *
 def get_all_file_path_in(target_dir: str) -> list:
     """
     @param:
-        target_dir=(string)対象とするディレクトリ
+        target_dir: (str) 対象とするディレクトリ
     @return:
-        [string]=対象ディレクトリ内のすべてのパス
-    指定したディレクトリ内のすべてのファイルのパスを取得
+        [str]: 対象ディレクトリ内のすべてのファイルのパス
+    指定したディレクトリ内のすべてのファイルのパスを取得します。
     """
     return [
         path
@@ -28,10 +28,10 @@ def get_all_file_path_in(target_dir: str) -> list:
 def get_all_dir_path_in(target_dir: str) -> list:
     """
     @param:
-        target_dir=(string)対象とするディレクトリ
+        target_dir: (str) 対象とするディレクトリ
     @return:
-        [string]=対象ディレクトリ内のすべてのサブディレクトリ
-    指定したディレクトリ内のすべてのサブディレクトリを取得
+        [str]: 対象ディレクトリ内のすべてのサブディレクトリ
+    指定したディレクトリ内のすべてのサブディレクトリのパスを取得します。
     """
     return [
         path
@@ -43,10 +43,10 @@ def get_all_dir_path_in(target_dir: str) -> list:
 def get_all_folder_name_in_nextdir(target_dir: str) -> list:
     """
     @param:
-        target_dir =str 対象のフォルダのパス
+        target_dir: (str) 対象のフォルダのパス
     @return:
-        list str = 対象のフォルダ直下のファイル名
-    対象のフォルダ直下のファイル名を取得する
+        [str]: 対象のフォルダ直下のフォルダ名
+    対象のフォルダ直下のフォルダ名を取得します。
     """
     return [
         entry
@@ -58,12 +58,11 @@ def get_all_folder_name_in_nextdir(target_dir: str) -> list:
 def get_all_file_in_nextdir(target_dir: str) -> list:
     """
     @param:
-        target_dir =str 対象のフォルダのパス
+        target_dir: (str) 対象のフォルダのパス
     @return:
-        list str = 対象のフォルダ直下のフォルダ名
-    対象のフォルダ直下のフォルダ名を取得する
+        [str]: 対象のフォルダ直下のファイル名
+    対象のフォルダ直下のファイル名を取得します。
     """
-
     return [
         entry
         for entry in os.listdir(target_dir)
@@ -71,28 +70,28 @@ def get_all_file_in_nextdir(target_dir: str) -> list:
     ]
 
 
-def get_file_extention(path: str) -> str:
+def get_file_extension(path: str) -> str:
     """
     @param:
-        path =(str)ファイルのパス
+        path: (str) ファイルのパス
     @return:
-        (str)ファイルの拡張子
-    拡張子の文字列を取得する
+        str: ファイルの拡張子
+    ファイルの拡張子の文字列を取得します。
     """
-    extention_str = ""
+    extension_str = ""
     for i in path[::-1]:
         if i == ".":
-            return extention_str[::-1]
-        extention_str += i
+            return extension_str[::-1]
+        extension_str += i
 
 
 def get_dir_size(target_dir: str) -> int:
     """
     @param:
-        target_dir=(string)対象とするディレクトリ
+        target_dir: (str) 対象とするディレクトリ
     @return:
-        ディレクトリのサイズ
-    指定したディレクトリのサイズを返す
+        int: ディレクトリのサイズ
+    指定したディレクトリのサイズを返します。
     """
     total = 0
     with os.scandir(target_dir) as it:
@@ -107,9 +106,9 @@ def get_dir_size(target_dir: str) -> int:
 def get_file_size(target_file: str) -> int:
     """
     @param:
-        target_file=(string)対象とするファイル
+        target_file: (str) 対象とするファイル
     @return:
-        ファイルのサイズ
-    指定したファイルのサイズを返す
+        int: ファイルのサイズ
+    指定したファイルのサイズを返します。
     """
     return os.path.getsize(target_file)

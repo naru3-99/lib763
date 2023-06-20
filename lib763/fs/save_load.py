@@ -11,23 +11,23 @@ import os
 def save_pickle(obj: object, path: str) -> None:
     """
     @param:
-        obj =(obj*)
-        path=(string)保存するパス
+        obj: (object) 保存するオブジェクト
+        path: (str) 保存するパス
     @return:
         None
-    pickleファイルとしてオブジェクトを保存する
+    オブジェクトをpickleファイルとして保存します。
     """
     with open(path, "wb") as f:
         pickle.dump(obj, f)
 
 
-def load_pickle(path: str) -> None:
+def load_pickle(path: str) -> object:
     """
     @param:
-        path=(string)読み込むパス
+        path: (str) 読み込むパス
     @return:
-        (obj *) 保存されていたオブジェクト
-    pathに保存されていたオブジェクトをloadする
+        object: 保存されていたオブジェクト
+    指定したパスのpickleファイルからオブジェクトを読み込みます。
     """
     with open(path, "rb") as f:
         obj = pickle.load(f)
@@ -37,12 +37,12 @@ def load_pickle(path: str) -> None:
 def save_sentence(sentence: str, path: str, encoding="utf-8") -> None:
     """
     @param:
-        sentence =(str)文字列データ
-        path=(str)保存するパス
-        encording=(str)encording
+        sentence: (str) 文字列データ
+        path: (str) 保存するパス
+        encoding: (str) エンコーディング
     @return:
         None
-    文字列データをファイルに保存
+    文字列データを指定したパスにテキストファイルとして保存します。
     """
     with open(path, "w", encoding=encoding) as f:
         f.write(sentence)
@@ -51,51 +51,51 @@ def save_sentence(sentence: str, path: str, encoding="utf-8") -> None:
 def save_sentence_a(sentence: str, path: str, encoding="utf-8") -> None:
     """
     @param:
-        sentence =(str)文字列データ
-        path=(str)保存するパス
-    @return:None
-    文字列データを追記
+        sentence: (str) 文字列データ
+        path: (str) 保存するパス
+        encoding: (str) エンコーディング
+    @return:
+        None
+    文字列データを指定したパスに追記します。
     """
-    if(not os.path.exists(path)):
-        print(f'error: no such file {path}')
+    if not os.path.exists(path):
+        print(f"error: no such file {path}")
         return
     with open(path, "a", encoding=encoding) as f:
         f.write(sentence)
 
 
-def __load_strls(path: str, encording="utf-8") -> list:
+def __load_strls(path: str, encoding="utf-8") -> list:
     """
     @param:
-        path = string パス
+        path: (str) パス
     @return:
-        list = [string]
+        list: [str]
         None
-    pathに保存してある文字列をrowごとに取得
-    pathが無かった場合=>return None
+    指定したパスに保存された文字列を行ごとに取得します。
+    パスが存在しない場合はNoneを返します。
     """
     try:
-        with open(path, "r", encoding=encording) as f:
+        with open(path, "r", encoding=encoding) as f:
             strls = f.readlines()
         return [row.replace("\n", "") for row in strls]
     except:
         return None
 
 
-def load_sentence(path: str, encording="utf-8") -> str:
+def load_sentence(path: str, encoding="utf-8") -> str:
     """
     @param:
-        path =string パス
+        path: (str) パス
     @return:
-        string
+        str
         None
-    txtファイルの中身を取り出す
+    指定したパスのテキストファイルの内容を取得します。
     """
     sentence = ""
-    strls = __load_strls(path, encording=encording)
+    strls = __load_strls(path, encoding=encoding)
     if strls is None:
         return
     for row in strls:
         sentence += row + "\n"
     return sentence
-
-

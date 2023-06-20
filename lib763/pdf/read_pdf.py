@@ -7,8 +7,7 @@ def read_pdf(file_path: str) -> str:
         file_path : str = ファイルのパス
     @return
         str = pdfファイルの中身
-    @todo
-        pdfファイルの中身を取得する
+    pdfファイルの中身を取得する
     """
     pdf_file = open(file_path, "rb")
     pdf_reader = PyPDF2.PdfReader(pdf_file)

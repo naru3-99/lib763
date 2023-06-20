@@ -1,9 +1,3 @@
-"""
-2023/05/19
-auther:naru
-encoding=utf-8
-"""
-
 import time
 import keyboard as kb
 import mouse
@@ -11,16 +5,21 @@ import pyperclip
 from PIL import ImageGrab
 import ctypes
 
-
 class mouse_keyboard:
     def __init__(self, wait_time=0.5) -> None:
+        """
+        コンストラクタ
+        @param:
+            wait_time: (float) 待機時間
+        """
         self.wait_time = wait_time
         self.display_scale = self.__get_display_scale()
 
     def __get_display_scale(self) -> float:
         """
-        Returns:
-            float: ディスプレイの倍率
+        ディスプレイのスケールを取得する
+        @return:
+            (float): ディスプレイのスケール値
         """
         try:
             user32 = ctypes.windll.user32
@@ -32,30 +31,28 @@ class mouse_keyboard:
 
     def __adjust_coordinate(self, coordinate: tuple) -> tuple:
         """
-        Args:
-            coordinate (tuple): 座標(x,y)
-        Returns:
-            tuple: 座標(x,y)をディスプレイの拡大・縮小の倍率で割ったもの
-        座標をディスプレイの倍率に合わせて補正する
+        座標をディスプレイスケールに合わせて調整する
+        @param:
+            coordinate: (tuple) 入力座標 (x, y)
+        @return:
+            (tuple): 調整された座標 (x, y)
         """
         return coordinate[0] // self.display_scale, coordinate[1] // self.display_scale
 
     def kb_input(self, input_str: str) -> None:
         """
+        キーボード入力をシミュレートする
         @param:
-            inputstr=(String)入力する文字列
-        @return:
-            None
+            input_str: (str) 入力文字列
         """
         kb.press_and_release(input_str)
         time.sleep(self.wait_time)
 
     def write_word(self, word: str) -> None:
         """
+        クリップボードに文字列をコピーして貼り付ける
         @param:
-            word=(str)書き込む文字列
-        @return:
-            None
+            word: (str) 貼り付ける文字列
         """
         self.copy_to_clipboard(word)
         self.kb_input("ctrl+v")
@@ -63,10 +60,9 @@ class mouse_keyboard:
 
     def backspace(self, times: int):
         """
+        バックスペースキーを指定回数押す
         @param:
-            times=(int)削除する文字数
-        @return:
-            None
+            times: (int) バックスペースキーを押す回数
         """
         for _ in range(times):
             kb.press_and_release("backspace")
@@ -74,78 +70,67 @@ class mouse_keyboard:
 
     def __move_mouse(self, x: float, y: float) -> None:
         """
+        マウスを指定座標に移動する
         @param:
-            x,y=(float)座標
-        @return:
-            None
+            x: (float) x座標
+            y: (float) y座標
         """
         mouse.move(x, y, absolute=True, duration=0)
         time.sleep(self.wait_time)
 
     def move_mouse(self, coordinate: tuple) -> None:
         """
+        マウスを指定座標に移動する
         @param:
-            coordinate =(int,int) マウスポイントする座標
-        @return:
-            None
+            coordinate: (tuple) 移動先座標 (x, y)
         """
         coord = self.__adjust_coordinate(coordinate)
         self.__move_mouse(float(coord[0]), float(coord[1]))
 
     def click(self) -> None:
         """
-        @param:
-            None
-        @return:
-            None
+        マウス左ボタンをクリックする
         """
         mouse.click("left")
         time.sleep(self.wait_time)
 
     def click_coordinate(self, coordinate: tuple) -> None:
         """
+        マウスを指定座標に移動してクリックする
         @param:
-            coordinate =(int,int) クリックする座標
-        @return:
-            None
+            coordinate: (tuple) クリック座標 (x, y)
         """
         self.move_mouse(coordinate)
         self.click()
 
     def scroll(self) -> None:
         """
-        @param:
-            None
-        @return:
-            None
+        マウススクロールを行う
         """
         mouse.wheel(-1)
         time.sleep(self.wait_time)
 
     def get_screen_shot(self, path: str) -> None:
         """
+        スクリーンショットを撮影して保存する
         @param:
-            path=str 保存先
-        @return:
-            None
+            path: (str) 保存先のファイルパス
         """
         ImageGrab.grab().save(path)
         time.sleep(self.wait_time)
 
     def get_clipboard_str(self) -> None:
         """
-        @param:
-            None
+        クリップボードから文字列を取得する
         @return:
-            None
+            (str): クリップボードの文字列
         """
         return pyperclip.paste()
 
     def copy_to_clipboard(self, word: str) -> None:
         """
+        文字列をクリップボードにコピーする
         @param:
-            word =(str)
-        @return:
-            None
+            word: (str) コピーする文字列
         """
         return pyperclip.copy(word)
