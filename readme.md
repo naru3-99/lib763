@@ -2,7 +2,15 @@
 
 自作ライブラリ
 
-# 使い方一覧
+## how to install
+
+```bash
+git clone https://github.com/naru-99/lib763.git
+cd lib763
+pip install .
+```
+
+## 使い方一覧
 
 - macro/mouse_keyboard.py
 
@@ -45,14 +53,16 @@
 
 1. スクリーンショットの中からボタンの座標を取得
    <img src="./screenshot.png" alt="screenshot">
-   座標を取得したいボタン→
+   座標を取得したいボタン →
    <img src="./button.png" alt="button">
+
    ```python
    from lib763.macro.image_recognition import get_image_coordinate
    coordinate = get_image_coordinate('./screenshot.png','./button.png')
    ```
 
-2. スクリーンショットを取得し、その中からボタンの座標を取得→クリック
+2. スクリーンショットを取得し、その中からボタンの座標を取得 → クリック
+
    ```python
    from lib763.macro.mouse_keyboard import mouse_keyboard
    from lib763.macro.image_recognition import get_image_coordinate
@@ -60,6 +70,7 @@
    mk = mouse_keyboard()
    mk.click_coordinate(get_image_coordinate('./screenshot.png','./button.png'))
    ```
+
 3. ラジオボタンを押す<br>
    screenshot_radio_sample.png<br>
    <img src="./screenshot_radio_sample.png" alt="screenshot">
@@ -68,6 +79,7 @@
    radio_button.png<br>
    <img src="./radio_button.png" alt="screenshot"><br>
    上記の、「メール」のラジオボタンを押したい場合：
+
    ```python
    from lib763.macro.mouse_keyboard import mouse_keyboard
    from lib763.macro.image_recognition import get_subregion_center
@@ -83,17 +95,18 @@
    ```
 
 - chrome_window.py
+
 1. インスタンスを取得
    ```python
    from lib763.macro.chrome_window import chrome_window
    chrome = chrome_window()
    ```
-2. chromeの立ち上げ+urlの入力
+2. chrome の立ち上げ+url の入力
    ```python
    chrome.create_chrome_window()
    chrome.input_url_to_tab('https://www.google.com/')
    ```
-3. chromeのウィンドウをアクティブ化+最大化
+3. chrome のウィンドウをアクティブ化+最大化
    ```python
    chrome.activate_chrome()
    ```
