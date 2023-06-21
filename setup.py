@@ -5,6 +5,5 @@ setup(
     version="0.0.1",
     description="naru's library",
     author='naru',
-    license='MIT',
-    packages=find_packages()
+    license='MIT'
 )
