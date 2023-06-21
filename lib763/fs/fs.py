@@ -7,6 +7,7 @@ encoding=utf-8
 import os
 import shutil
 import tarfile
+import zipfile
 
 from lib763.fs.path import *
 from lib763.fs.save_load import *
@@ -114,7 +115,7 @@ def copy_file(load_path: str, save_path: str) -> None:
     return save_sentence(load_sentence(load_path), save_path)
 
 
-def create_tar_archive(directory_path: str, archive_name: str)->None:
+def create_tar_archive(directory_path: str, archive_name: str) -> None:
     """
     @param:
         directory_path: (str) 保存するディレクトリ
@@ -126,3 +127,44 @@ def create_tar_archive(directory_path: str, archive_name: str)->None:
     """
     with tarfile.open(archive_name, "w") as tar:
         tar.add(directory_path, arcname="directory")
+
+
+def extract_tar_archive(extract_path: str, archive_name: str) -> None:
+    """
+    @param:
+        extract_path: (str) 解凍するパス
+        archive_name  : (str) アーカイブファイルの名前
+    @return:
+        None
+    tarによる解凍を行う。
+    extract_tar_archive("/path/to/extract","archive.tar")
+    """
+    with tarfile.open(archive_name, "r") as tar:
+        tar.extractall(extract_path)
+
+
+def create_zip_archive(directory_path, archive_name):
+    """
+    @param:
+        directory_path: (str) 保存するディレクトリ
+        archive_name  : (str) アーカイブファイルの名前
+    @return:
+        None
+    zipによる圧縮を行う。
+    create_zip_archive("/path/to/directory", "archive")
+    """
+    shutil.make_archive(archive_name, "zip", directory_path)
+
+
+def extract_zip_archive(extract_path, archive_name):
+    """
+    @param:
+        extract_path: (str) 解凍するパス
+        archive_name  : (str) アーカイブファイルの名前
+    @return:
+        None
+    zipによる解凍を行う。
+    extract_zip_archive("archive.zip", "/path/to/extract")
+    """
+    with zipfile.ZipFile(archive_name, "r") as zip_ref:
+        zip_ref.extractall(extract_path)
