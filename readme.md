@@ -38,18 +38,18 @@
    ```
 5. スクリーンショットの取得
    ```python
-   mk.get_screen_shot('./fig/screenshot.png')
+   mk.get_screen_shot('./screenshot.png')
    ```
 
 - macro/image_recognition.py
 
 1. スクリーンショットの中からボタンの座標を取得
-   <img src="./fig/screenshot.png" alt="screenshot">
+   <img src="./screenshot.png" alt="screenshot">
    座標を取得したいボタン→
-   <img src="./fig/button.png" alt="button">
+   <img src="./button.png" alt="button">
    ```python
    from lib763.macro.image_recognition import get_image_coordinate
-   coordinate = get_image_coordinate('./fig/screenshot.png','./fig/button.png')
+   coordinate = get_image_coordinate('./screenshot.png','./button.png')
    ```
 
 2. スクリーンショットを取得し、その中からボタンの座標を取得→クリック
@@ -58,15 +58,15 @@
    from lib763.macro.image_recognition import get_image_coordinate
 
    mk = mouse_keyboard()
-   mk.click_coordinate(get_image_coordinate('./fig/screenshot.png','./fig/button.png'))
+   mk.click_coordinate(get_image_coordinate('./screenshot.png','./button.png'))
    ```
 3. ラジオボタンを押す<br>
    screenshot_radio_sample.png<br>
-   <img src="./fig/screenshot_radio_sample.png" alt="screenshot">
+   <img src="./screenshot_radio_sample.png" alt="screenshot">
    subreg_radio_sample.png<br>
-   <img src="./fig/subreg_radio_sample.png" alt="screenshot"><br>
+   <img src="./subreg_radio_sample.png" alt="screenshot"><br>
    radio_button.png<br>
-   <img src="./fig/radio_button.png" alt="screenshot"><br>
+   <img src="./radio_button.png" alt="screenshot"><br>
    上記の、「メール」のラジオボタンを押したい場合：
    ```python
    from lib763.macro.mouse_keyboard import mouse_keyboard
@@ -75,9 +75,9 @@
    mk = mouse_keyboard()
    mk.click_coordinate(
         get_subregion_center(
-            "./fig/screenshot_radio_sample.png",
-            "./fig/subreg_radio_sample.png",
-            "./fig/radio_button.png",
+            "./screenshot_radio_sample.png",
+            "./subreg_radio_sample.png",
+            "./radio_button.png",
         )
     )
    ```
