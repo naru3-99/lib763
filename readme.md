@@ -14,7 +14,7 @@ pip install .
 ```bash
 git clone https://github.com/naru-99/lib763.git
 cd lib763
-python3 install .
+python3 setup.py develop
 ```
 
 ## 使い方一覧
