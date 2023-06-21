@@ -6,6 +6,8 @@ encoding=utf-8
 
 import os
 import shutil
+import tarfile
+
 from lib763.fs.path import *
 from lib763.fs.save_load import *
 
@@ -110,3 +112,17 @@ def copy_file(load_path: str, save_path: str) -> None:
     ファイルをコピーします。
     """
     return save_sentence(load_sentence(load_path), save_path)
+
+
+def create_tar_archive(directory_path: str, archive_name: str)->None:
+    """
+    @param:
+        directory_path: (str) 保存するディレクトリ
+        archive_name  : (str) アーカイブファイルの名前
+    @return:
+        None
+    tarによる圧縮を行う。
+    create_tar_archive('/path/to/directory', 'archive.tar')
+    """
+    with tarfile.open(archive_name, "w") as tar:
+        tar.add(directory_path, arcname="directory")
