@@ -1,5 +1,0 @@
-setup.py
-lib763.egg-info/PKG-INFO
-lib763.egg-info/SOURCES.txt
-lib763.egg-info/dependency_links.txt
-lib763.egg-info/top_level.txt
