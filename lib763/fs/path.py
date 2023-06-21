@@ -85,6 +85,17 @@ def get_file_extension(path: str) -> str:
         extension_str += i
 
 
+def get_file_name(path: str) -> str:
+    """
+    @param:
+        path: (str) ファイルのパス
+    @return:
+        str: ファイルの名前
+    ファイル名の文字列を取得します。
+    """
+    return os.path.basename(path)
+
+
 def get_dir_size(target_dir: str) -> int:
     """
     @param:
