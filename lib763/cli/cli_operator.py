@@ -1,10 +1,16 @@
 import subprocess
+import platform
 
 
-class cmd_operator:
+class cli_operator:
     def __init__(self):
+        if platform.system() == "Windows":
+            self.shell = "cmd"
+        else:
+            self.shell = "bash"
+
         self.process = subprocess.Popen(
-            "cmd",
+            self.shell,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -20,6 +26,14 @@ class cmd_operator:
             (tuple) 標準出力と標準エラー出力のタプル
         """
         return self.process.communicate(input=command + "\n")
+
+    def get_process_id(self) -> int:
+        """
+        自分のプロセスIDを取得する
+        @return:
+            (int) プロセスID
+        """
+        return self.process.pid
 
     def close(self):
         """
