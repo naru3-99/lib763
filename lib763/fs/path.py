@@ -96,6 +96,17 @@ def get_file_name(path: str) -> str:
     return os.path.basename(path)
 
 
+def get_parent_directory(file_path: str) -> str:
+    """
+    ファイルのパスから直下のディレクトリを取得します。
+    @Args:
+        file_path (str): ファイルのパス
+    @Returns:
+        str: ファイルの存在する直下のディレクトリのパス
+    """
+    return os.path.dirname(file_path)
+
+
 def get_dir_size(target_dir: str) -> int:
     """
     @param:
