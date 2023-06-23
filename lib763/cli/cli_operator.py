@@ -37,7 +37,7 @@ class cli_operator:
                 stderr=subprocess.PIPE,
                 text=True,
             )
-        return (None, None)
+        return (None, 'timeout error')
 
     def get_process_id(self) -> int:
         """
