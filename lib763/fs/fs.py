@@ -168,3 +168,34 @@ def extract_zip_archive(extract_path, archive_name):
     """
     with zipfile.ZipFile(archive_name, "r") as zip_ref:
         zip_ref.extractall(extract_path)
+
+
+def rename(target_dir: str, before: str, after: str, force=False) -> bool:
+    """
+    ファイルをリネームします。
+    @Args:
+        target_dir (str): ファイルが存在するディレクトリのパス
+        before (str): リネーム前のファイル名
+        after (str): リネーム後のファイル名
+        force (bool, optional): 同名のファイルが存在する場合に上書きするかどうかを指定します。デフォルトは False です。
+    @Returns:
+        bool: リネームが成功した場合は True、失敗した場合は False を返します。
+    """
+    if not os.path.exists(target_dir):
+        print(f"No such directory: {target_dir}")
+        return False
+    before_path = os.path.join(target_dir, before)
+    if not os.path.isfile(before_path):
+        print(f"No such file: {before_path}")
+        return False
+    after_path = os.path.join(target_dir, after)
+    if not force:
+        if os.path.exists(after_path):
+            print(f"File already exists: {after_path}")
+            return False
+    try:
+        os.rename(before_path, after_path)
+        return True
+    except Exception as e:
+        print(f"Error renaming file: {e}")
+        return False
