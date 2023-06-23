@@ -3,7 +3,8 @@ import platform
 
 
 class cli_operator:
-    def __init__(self):
+    def __init__(self, timeout=100):
+        self.timeout = timeout
         if platform.system() == "Windows":
             self.shell = "cmd"
         else:
@@ -25,7 +26,18 @@ class cli_operator:
         @return:
             (tuple) 標準出力と標準エラー出力のタプル
         """
-        return self.process.communicate(input=command + "\n")
+        try:
+            return self.process.communicate(input=command + "\n", timeout=self.timeout)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            self.process = subprocess.Popen(
+                self.shell,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+        return (None, None)
 
     def get_process_id(self) -> int:
         """
