@@ -2,7 +2,9 @@ from lib763.cli.cli_operator import cli_operator
 
 
 class ssh_operator:
-    def __init__(self, user_name: str, host_name: str, key_path: str, port: int = 22) -> None:
+    def __init__(
+        self, user_name: str, host_name: str, key_path: str, port: int = 22
+    ) -> None:
         """
         @param:
             user_name: (str) SSH接続のユーザー名
@@ -10,12 +12,13 @@ class ssh_operator:
             key_path: (str) SSH秘密鍵のファイルパス
             port: (int) SSH接続のポート番号（デフォルトは22）
         """
-        self.cmd = cli_operator()
         self.__user = user_name
         self.__host = host_name
         self.__key_path = key_path
         self.__port = port
         self.__state = False
+        self.cli = cli_operator()
+        self.init_ssh()
 
     def set_state(self, flag: bool) -> None:
         """
@@ -33,12 +36,14 @@ class ssh_operator:
         """
         return self.__state
 
-    def __init_ssh(self):
+    def init_ssh(self):
         """
         SSH接続を初期化する
         """
-        self.cmd.execute(f"ssh -i {self.__key_path} -p {self.__port} {self.__user}@{self.__host}")
-        self.__state = True
+        self.cli.execute(
+            f"ssh -i {self.__key_path} -p {self.__port} {self.__user}@{self.__host}"
+        )
+        self.set_state(True)
 
     def execute(self, command: str) -> tuple:
         """
@@ -49,11 +54,15 @@ class ssh_operator:
             (tuple) 標準出力と標準エラー出力のタプル
         """
         if not self.get_state():
-            self.__init_ssh()
-        return self.cmd.execute(command)
+            raise SSHConectionError("sshの接続が切れました")
+        return self.cli.execute(command)
 
     def exit(self):
         """
         SSH接続を終了する
         """
-        self.cmd.close()
+        self.cli.close()
+
+
+class SSHConectionError(Exception):
+    pass
