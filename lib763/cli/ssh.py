@@ -3,7 +3,12 @@ from lib763.cli.cli_operator import cli_operator
 
 class ssh_operator:
     def __init__(
-        self, user_name: str, host_name: str, key_path: str, port: int = 22
+        self,
+        user_name: str,
+        host_name: str,
+        password: str,
+        key_path: str = None,
+        port: int = 22,
     ) -> None:
         """
         @param:
@@ -14,6 +19,7 @@ class ssh_operator:
         """
         self.__user = user_name
         self.__host = host_name
+        self.__pswd = password
         self.__key_path = key_path
         self.__port = port
         self.__state = False
@@ -40,9 +46,18 @@ class ssh_operator:
         """
         SSH接続を初期化する
         """
+        # sshコマンド
         self.cli.execute(
-            f"ssh -i {self.__key_path} -p {self.__port} {self.__user}@{self.__host}"
+            "ssh " + f"-i {self.__key_path} "
+            if (self.__key_path is not None)
+            else "" + f"-p {self.__port} {self.__user}@{self.__host}"
         )
+        # Are you sure you want to continue connecting (yes/no/[fingerprint])?
+        self.cli.execute("yes")
+        # user@host's password:
+        answer = self.cli.execute(self.__pswd)
+        if('Permission denied, please try again.' in answer[0]):
+            raise SSHConectionError('password is not correct')
         self.set_state(True)
 
     def execute(self, command: str) -> tuple:
