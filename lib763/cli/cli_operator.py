@@ -18,16 +18,23 @@ class cli_operator:
             text=True,
         )
 
-    def execute(self, command: str) -> tuple:
+    def execute(self, command: str, timeout=None) -> tuple:
         """
-        コマンドを実行する
+        コマンドを実行する。
+        timeoutを指定しない場合、コンストラクタで指定したタイムアウトを使用する
         @param:
             command: (str) 実行するコマンド
+            timeout: (int) タイムアウト
         @return:
             (tuple) 標準出力と標準エラー出力のタプル
         """
         try:
-            return self.process.communicate(input=command + "\n", timeout=self.timeout)
+            return self.process.communicate(
+                input=command + "\n",
+                timeout=timeout
+                if (timeout is not None and type(timeout) == int)
+                else self.timeout,
+            )
         except subprocess.TimeoutExpired:
             self.process.kill()
             self.process = subprocess.Popen(
@@ -37,7 +44,7 @@ class cli_operator:
                 stderr=subprocess.PIPE,
                 text=True,
             )
-        return (None, 'timeout error')
+        return (None, "timeout error")
 
     def get_process_id(self) -> int:
         """
