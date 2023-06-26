@@ -19,7 +19,7 @@ def get_all_file_path_in(target_dir: str) -> list:
     指定したディレクトリ内のすべてのファイルのパスを取得します。
     """
     return [
-        path
+        path.replace("\\", "/")
         for path in glob.glob(target_dir + "/**/*", recursive=True)
         if (os.path.isfile(path))
     ]
@@ -34,7 +34,7 @@ def get_all_dir_path_in(target_dir: str) -> list:
     指定したディレクトリ内のすべてのサブディレクトリのパスを取得します。
     """
     return [
-        path
+        path.replace("\\", "/")
         for path in glob.glob(target_dir + "/*/", recursive=True)
         if (os.path.isdir(path))
     ]
@@ -134,3 +134,4 @@ def get_file_size(target_file: str) -> int:
     指定したファイルのサイズを返します。
     """
     return os.path.getsize(target_file)
+
