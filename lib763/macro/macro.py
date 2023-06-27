@@ -1,5 +1,5 @@
 from lib763.macro.core.image_recognition import *
-from lib763.macro.core.mouse_keyboard import mouse_keyboard
+from lib763.macro.core.MouseKeyboard import MouseKeyboard
 from lib763.fs.fs import rmrf
 
 from PIL import ImageGrab
@@ -7,9 +7,9 @@ import pyperclip
 import time
 
 
-class macro:
+class Macro:
     def __init__(self) -> None:
-        self.mk = mouse_keyboard()
+        self.mk = MouseKeyboard()
 
     def recog_and_click_img(self, img_path: str):
         self.mk.get_screen_shot("./scshot.png")

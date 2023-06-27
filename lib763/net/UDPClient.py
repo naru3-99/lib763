@@ -1,30 +1,30 @@
 import socket
 
 
-class udp_server:
-    def __init__(self, host: str, port: int, buffer_size: int) -> None:
+class UDPClient:
+    def __init__(self, host: str, ports: list, buffer_size: int) -> None:
         """
+        UDPクライアントの初期化
 
         @Args:
             host (str): ホスト名またはIPアドレス
-            port (int): ポート番号
-            buffer_size (int): 受信バッファのサイズ
+            ports (list): 送信先のポート番号のリスト
+            buffer_size (int): 送信バッファのサイズ
         """
         self._host = host
-        self._port = port
+        self._ports = ports
         self._buffer_size = buffer_size
         self._sock = None
 
-    def __enter__(self) -> "udp_server":
+    def __enter__(self) -> "UDPClient":
         """
         コンテキストマネージャの開始時に呼び出されるメソッド
-        サーバーの初期化を行う
+        クライアントの初期化を行う
 
         @Returns:
-            UDPServer: 自身のインスタンス
+            UDPClient: 自身のインスタンス
         """
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._sock.bind((self._host, self._port))
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
@@ -34,12 +34,12 @@ class udp_server:
         """
         self._sock.close()
 
-    def receive_udp_packet(self) -> bytes:
+    def send_msg(self, msg: str) -> None:
         """
-        UDPパケットを受信する
+        メッセージを送信する
 
-        @Returns:
-            bytes: 受信したパケットのデータ
+        @Args:
+            msg (str): 送信するメッセージ
         """
-        rcv_data, addr = self._sock.recvfrom(self._buffer_size)
-        return rcv_data
+        for port in self._ports:
+            self._sock.sendto(msg.encode("ascii"), (self._host, port))

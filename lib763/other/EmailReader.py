@@ -5,7 +5,7 @@ import email
 from email.header import decode_header
 
 
-class email_reader:
+class EmailReader:
     def __init__(
         self, username: str, password: str, imap_address="imap.gmail.com", search_days=7
     ) -> None:

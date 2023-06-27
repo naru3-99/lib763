@@ -1,15 +1,15 @@
-from lib763.macro.core.mouse_keyboard import mouse_keyboard
+from lib763.macro.core.MouseKeyboard import MouseKeyboard
 import time
 import pyautogui
 
 
-class chrome_window:
+class ChromeWindow:
     """
     このクラスはChromeウィンドウを制御するための機能を提供します。
     """
 
     def __init__(self) -> None:
-        self.__mk = mouse_keyboard()
+        self.__mk = MouseKeyboard()
         self.__window_state = False
         self.__tub_count = 0
 

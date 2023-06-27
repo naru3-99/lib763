@@ -6,7 +6,7 @@ from PIL import ImageGrab
 import ctypes
 
 
-class mouse_keyboard:
+class MouseKeyboard:
     def __init__(self, wait_time=0.5) -> None:
         """
         コンストラクタ
