@@ -2,14 +2,15 @@ import socket
 
 
 class UDPClient:
-    def __init__(self, host: str, ports: list, buffer_size: int) -> None:
-        """
-        UDPクライアントの初期化
+    """UDPクライアントを管理するクラス。"""
 
-        @Args:
-            host (str): ホスト名またはIPアドレス
-            ports (list): 送信先のポート番号のリスト
-            buffer_size (int): 送信バッファのサイズ
+    def __init__(self, host: str, ports: list, buffer_size: int) -> None:
+        """UDPクライアントの初期設定を行います。
+
+        Args:
+            host: ホスト名またはIPアドレス
+            ports: 送信先のポート番号のリスト
+            buffer_size: 送信バッファのサイズ
         """
         self._host = host
         self._ports = ports
@@ -17,29 +18,23 @@ class UDPClient:
         self._sock = None
 
     def __enter__(self) -> "UDPClient":
-        """
-        コンテキストマネージャの開始時に呼び出されるメソッド
-        クライアントの初期化を行う
+        """コンテキストマネージャの開始時にソケットを初期化します。
 
-        @Returns:
-            UDPClient: 自身のインスタンス
+        Returns:
+            自身のインスタンス
         """
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
-        """
-        コンテキストマネージャの終了時に呼び出されるメソッド
-        ソケットをクローズする
-        """
+        """コンテキストマネージャの終了時にソケットをクローズします。"""
         self._sock.close()
 
-    def send_msg(self, msg: str) -> None:
-        """
-        メッセージを送信する
+    def send_message(self, message: str) -> None:
+        """指定されたメッセージを全てのポートに送信します。
 
-        @Args:
-            msg (str): 送信するメッセージ
+        Args:
+            message: 送信するメッセージ
         """
         for port in self._ports:
-            self._sock.sendto(msg.encode("ascii"), (self._host, port))
+            self._sock.sendto(message.encode("ascii"), (self._host, port))

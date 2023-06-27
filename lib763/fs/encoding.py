@@ -1,9 +1,3 @@
-"""
-2023/05/19
-auther: naru
-encoding=utf-8
-"""
-
 import chardet
 
 
@@ -15,9 +9,13 @@ def get_file_encoding(path: str) -> str:
         str: ファイルのエンコードを予測した結果
     パスで指定されたファイルのエンコードを予測します。
     """
-    with open(path, "rb") as f:
-        result = chardet.detect(f.read())
-    return result["encoding"]
+    try:
+        with open(path, "rb") as f:
+            result = chardet.detect(f.read())
+        return result["encoding"]
+    except Exception as e:
+        print(f"エラーが発生しました: {e}")
+        return None
 
 
 def change_encoding(sentence: str, before: str, after: str) -> str:
@@ -30,4 +28,8 @@ def change_encoding(sentence: str, before: str, after: str) -> str:
         str: エンコーディングが変更された文字列
     文字列のエンコーディングを変更します。
     """
-    return sentence.encode(before).decode(after)
+    try:
+        return sentence.encode(before).decode(after)
+    except Exception as e:
+        print(f"エラーが発生しました: {e}")
+        return None

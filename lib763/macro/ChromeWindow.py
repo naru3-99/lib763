@@ -4,126 +4,91 @@ import pyautogui
 
 
 class ChromeWindow:
-    """
-    このクラスはChromeウィンドウを制御するための機能を提供します。
-    """
+    """Chromeウィンドウの制御機能を提供するクラス。"""
 
     def __init__(self) -> None:
         self.__mk = MouseKeyboard()
-        self.__window_state = False
-        self.__tub_count = 0
+        self.__window_active = False
+        self.__tab_count = 0
 
-    def set_window_state(self, flag: bool) -> None:
-        """
-        @param:
-            flag: (bool) ウィンドウの状態 (True: アクティブ, False: 非アクティブ)
-        @return:
-            None
-        ウィンドウの状態を設定します。
-        """
-        self.__window_state = flag
+    def set_window_active(self, is_active: bool) -> None:
+        """ウィンドウの活性状態を設定します。
 
-    def get_window_state(self) -> bool:
+        Args:
+            is_active: ウィンドウの活性状態 (True: アクティブ, False: 非アクティブ)
         """
-        @param:
-            なし
-        @return:
-            (bool) ウィンドウの状態 (True: アクティブ, False: 非アクティブ)
-        ウィンドウの状態を取得します。
-        """
-        return self.__window_state
+        self.__window_active = is_active
 
-    def __check_and_ready_window(self):
+    def get_window_active(self) -> bool:
+        """ウィンドウの活性状態を取得します。
+
+        Returns:
+            ウィンドウの活性状態 (True: アクティブ, False: 非アクティブ)
         """
-        @param:
-            なし
-        @return:
-            None
-        ウィンドウの状態を確認し、必要な準備を行います。
-        """
-        if self.__tub_count == 0:
+        return self.__window_active
+
+    def __prepare_window(self):
+        """ウィンドウの状態を確認し、必要な操作を行います。"""
+        if self.__tab_count == 0:
             self.__create_chrome_window()
-        if not self.get_window_state():
+        if not self.get_window_active():
             self.activate_chrome()
 
     def activate_chrome(self):
-        """
-        @param:
-            なし
-        @return:
-            None
-        Chromeウィンドウをアクティブ化し、最大化します。
-        """
+        """Google Chromeウィンドウをアクティブにし、最大化します。"""
         chrome_title = "Google Chrome"
         pyautogui.getWindowsWithTitle(chrome_title)[0].activate()
         pyautogui.getWindowsWithTitle(chrome_title)[0].maximize()
-        self.set_window_state(True)
+        self.set_window_active(True)
 
     def create_chrome_window(self) -> None:
+        """新規Google Chromeウィンドウを作成します。
+
+        既にウィンドウが活性状態、またはタブが開いている場合は、ウィンドウをアクティブにする。
         """
-        @param:
-            なし
-        @return:
-            None
-        Chromeウィンドウを作成します。
-        """
-        if self.get_window_state():
+        if self.get_window_active():
             return
-        if self.__tub_count > 0:
+        if self.__tab_count > 0:
             self.activate_chrome()
             return
         self.__mk.kb_input("win + r")
         self.__mk.write_word("chrome")
         self.__mk.kb_input("enter")
-        self.set_window_state(True)
-        self.__tub_count = 1
+        self.set_window_active(True)
+        self.__tab_count = 1
         time.sleep(2.0)
 
     def input_url_to_tab(self, url: str) -> None:
+        """指定したURLを現在のタブに入力します。
+
+        Args:
+            url: 入力するURL
         """
-        @param:
-            url: (str) 入力するURL
-        @return:
-            None
-        URLを指定したタブに入力します。
-        """
-        self.__check_and_ready_window()
+        self.__prepare_window()
         self.__mk.write_word(url)
         self.__mk.kb_input("enter")
         time.sleep(0.5)
 
     def create_tab(self):
-        """
-        @param:
-            なし
-        @return:
-            None
-        新しいタブを作成します。
-        """
+        """新規タブを作成します。"""
         self.__mk.kb_input("ctrl+t")
-        self.__tub_count += 1
+        self.__tab_count += 1
 
-    def erase_tub(self):
-        """
-        @param:
-            なし
-        @return:
-            None
-        現在のタブを閉じます。
+    def close_tab(self):
+        """現在のタブを閉じます。
+
+        すべてのタブが閉じられた場合、ウィンドウの活性状態をFalseに設定します。
         """
         self.__mk.kb_input("ctrl+w")
-        self.__tub_count -= 1
-        if self.__tub_count == 0:
-            self.set_window_state(False)
+        self.__tab_count -= 1
+        if self.__tab_count == 0:
+            self.set_window_active(False)
 
-    def erase_window(self):
+    def close_window(self):
+        """ウィンドウ全体を閉じます。
+
+        この操作後、ウィンドウの活性状態はFalseになり、タブ数は0にリセットされます。
         """
-        @param:
-            なし
-        @return:
-            None
-        ウィンドウを閉じます。
-        """
-        self.__mk.keyboard_input("alt+f4")
-        self.set_window_state(False)
-        self.__tub_count = 0
+        self.__mk.kb_input("alt+f4")
+        self.set_window_active(False)
+        self.__tab_count = 0

@@ -1,35 +1,43 @@
 import cv2
 
 
+def read_image(path: str):
+    """指定されたパスから画像を読み込む
+    """
+    return cv2.imread(path)
+
+
 def image_contains(all_picture_path: str, target_picture_path: str) -> bool:
     """
-    @param:
-        all_picture_path: str 全体の画像のパス
-        target_picture_path: str 対象の画像のパス
-    @return:
-        bool 対象が全体に含まれているかどうか
-    全体画像の中に対象画像が完全一致で含まれている->true
+    Args:
+        all_picture_path (str): 全体画像のパス
+        target_picture_path (str): 対象画像のパス
+
+    Returns:
+        bool: 全体画像が対象画像を完全に含んでいるかどうか
     """
-    template = cv2.imread(all_picture_path)
-    image = cv2.imread(target_picture_path)
+    template = read_image(all_picture_path)
+    image = read_image(target_picture_path)
     result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
-    minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(result)
+    _, maxVal, _, _ = cv2.minMaxLoc(result)
     return maxVal > 0.99
 
 
-def get_image_coordinate(all_picture_path: str, target_picture_path: str) -> tuple | None:
+def get_image_coordinate(
+    all_picture_path: str, target_picture_path: str
+) -> tuple | None:
     """
-    @param:
-        all_picture_path: str 全体の画像のパス
-        target_picture_path: str 対象の画像のパス
-    @return:
-        (x, y) 対象が全体に含まれているかどうか
-    全体画像の中に対象画像が完全一致で含まれている座標(中央を返す)
+    Args:
+        all_picture_path (str): 全体画像のパス
+        target_picture_path (str): 対象画像のパス
+
+    Returns:
+        tuple | None: 対象画像が全体画像の中に含まれている座標（中心点）
     """
-    template = cv2.imread(all_picture_path)
-    image = cv2.imread(target_picture_path)
+    template = read_image(all_picture_path)
+    image = read_image(target_picture_path)
     result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
-    minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(result)
+    _, maxVal, _, maxLoc = cv2.minMaxLoc(result)
     if maxVal > 0.99:
         center_x = maxLoc[0] + image.shape[1] // 2
         center_y = maxLoc[1] + image.shape[0] // 2
@@ -37,32 +45,35 @@ def get_image_coordinate(all_picture_path: str, target_picture_path: str) -> tup
     return None
 
 
-def get_subregion_center(all_path: str, subreg_path: str, target_path: str) -> tuple | None:
+def get_subregion_center(
+    all_path: str, subreg_path: str, target_path: str
+) -> tuple | None:
     """
     Args:
-        all_path (str): 全画面の画像ファイルのパス
-        subreg_path (str): 全画面のうち、対象となる画像のファイルのパス
-        target_path (str): subregのうち、座標が知りたい画像のファイルのパス
+        all_path (str): フルスクリーン画像のパス
+        subreg_path (str): フルスクリーン画像内の目標領域画像のパス
+        target_path (str): 領域内の目標画像のパス
+
     Returns:
-        tuple | None: targetの座標
-    例えば、スクリーンショットをall_pathとすると、
-    (ラジオボタン)_説明となっている画像をsubreg、
-    (ラジオボタン)の画像をtargetとすると、
-    選択したい対象のラジオボタンの座標をクリックすることができる。
+        tuple | None: フルスクリーン画像内での目標画像の座標
     """
-    template = cv2.imread(all_path)
-    image = cv2.imread(subreg_path)
+    template = read_image(all_path)
+    image = read_image(subreg_path)
     result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
-    minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(result)
+    _, maxVal, _, maxLoc = cv2.minMaxLoc(result)
     if maxVal <= 0.98:
         return None
 
     template[:, :, :] = 0
-    template[maxLoc[1] : maxLoc[1] + image.shape[0], maxLoc[0] : maxLoc[0] + image.shape[1], :] = image
+    template[
+        maxLoc[1] : maxLoc[1] + image.shape[0],
+        maxLoc[0] : maxLoc[0] + image.shape[1],
+        :,
+    ] = image
 
-    target = cv2.imread(target_path)
+    target = read_image(target_path)
     result = cv2.matchTemplate(target, template, cv2.TM_CCORR_NORMED)
-    minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(result)
+    _, maxVal, _, maxLoc = cv2.minMaxLoc(result)
     if maxVal <= 0.98:
         return None
     center_x = maxLoc[0] + target.shape[1] // 2
@@ -72,23 +83,21 @@ def get_subregion_center(all_path: str, subreg_path: str, target_path: str) -> t
 
 def mask_img(img_path: str, mask_range: tuple) -> None:
     """
-    @param:
-        img_path: str マスクする画像のパス
-        mask_range: tuple (x1, x2, y1, y2)
-        x1 < x2, y1 < y2とすること。
-    @return:
-        None
-    マスクを行う
+    Args:
+        img_path (str): マスクを適用したい画像のパス
+        mask_range (tuple): マスクを適用する座標範囲 (x1, x2, y1, y2)、
+                            ただし x1 < x2、y1 < y2 を満たす必要があります
+
+    この関数は指定した範囲内で画像にマスクを適用します
     """
     x1, x2, y1, y2 = mask_range
     if x1 > x2 or y1 > y2:
-        print("error: x1 > x2 or y1 > y2")
-        return
+        raise ValueError("エラー： x1 > x2 または y1 > y2")
 
-    im = cv2.imread(img_path)
-    x, y, z = im.shape
+    im = read_image(img_path)
+    x, y, _ = im.shape
     if y < x2 or x < y2:
-        print("error: x < x2 or y < y2")
+        raise ValueError("エラー： x < x2 または y < y2")
 
     im[y1:y2, x1:x2] = 0
     cv2.imwrite(img_path, im)
