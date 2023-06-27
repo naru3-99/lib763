@@ -5,6 +5,7 @@ import pyperclip
 from PIL import ImageGrab
 import ctypes
 
+
 class mouse_keyboard:
     def __init__(self, wait_time=0.5) -> None:
         """
@@ -46,16 +47,6 @@ class mouse_keyboard:
             input_str: (str) 入力文字列
         """
         kb.press_and_release(input_str)
-        time.sleep(self.wait_time)
-
-    def write_word(self, word: str) -> None:
-        """
-        クリップボードに文字列をコピーして貼り付ける
-        @param:
-            word: (str) 貼り付ける文字列
-        """
-        self.copy_to_clipboard(word)
-        self.kb_input("ctrl+v")
         time.sleep(self.wait_time)
 
     def backspace(self, times: int):
@@ -100,6 +91,12 @@ class mouse_keyboard:
         @param:
             coordinate: (tuple) クリック座標 (x, y)
         """
+        if coordinate is None:
+            print("coordinate is None\nmaybe couldnt recognize image")
+            return
+        if coordinate[0] is None or coordinate[1] is None:
+            print("coordinate is None\nmaybe couldnt recognize image")
+            return
         self.move_mouse(coordinate)
         self.click()
 
@@ -109,28 +106,3 @@ class mouse_keyboard:
         """
         mouse.wheel(-1)
         time.sleep(self.wait_time)
-
-    def get_screen_shot(self, path: str) -> None:
-        """
-        スクリーンショットを撮影して保存する
-        @param:
-            path: (str) 保存先のファイルパス
-        """
-        ImageGrab.grab().save(path)
-        time.sleep(self.wait_time)
-
-    def get_clipboard_str(self) -> None:
-        """
-        クリップボードから文字列を取得する
-        @return:
-            (str): クリップボードの文字列
-        """
-        return pyperclip.paste()
-
-    def copy_to_clipboard(self, word: str) -> None:
-        """
-        文字列をクリップボードにコピーする
-        @param:
-            word: (str) コピーする文字列
-        """
-        return pyperclip.copy(word)

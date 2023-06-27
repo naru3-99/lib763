@@ -134,4 +134,3 @@ def get_file_size(target_file: str) -> int:
     指定したファイルのサイズを返します。
     """
     return os.path.getsize(target_file)
-
