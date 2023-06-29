@@ -13,7 +13,7 @@ class Macro:
     def __init__(self) -> None:
         self.mk = MouseKeyboard()
 
-    def recognize_and_click_image(self, image_path: str):
+    def recognize_and_click_image(self, image_path: str) -> None:
         """画像を認識し、その画像が存在する座標をクリックします。
 
         Args:
@@ -28,7 +28,7 @@ class Macro:
         self.mk.click_coordinate(coordinate)
         rmrf(screenshot_path)
 
-    def get_mouse_keyboard(self):
+    def get_mouse_keyboard(self) -> None:
         """MouseKeyboardインスタンスを取得します。
 
         Returns:
@@ -69,4 +69,4 @@ class Macro:
         """
         self.copy_to_clipboard(text)
         self.mk.kb_input("ctrl+v")
-        time.sleep(1)  
+        time.sleep(1)

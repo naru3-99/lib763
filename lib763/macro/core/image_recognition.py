@@ -1,9 +1,9 @@
 import cv2
+from typing import Union
 
 
 def read_image(path: str):
-    """指定されたパスから画像を読み込む
-    """
+    """指定されたパスから画像を読み込む"""
     return cv2.imread(path)
 
 
@@ -25,7 +25,7 @@ def image_contains(all_picture_path: str, target_picture_path: str) -> bool:
 
 def get_image_coordinate(
     all_picture_path: str, target_picture_path: str
-) -> tuple | None:
+) -> Union[tuple, None]:
     """
     Args:
         all_picture_path (str): 全体画像のパス
@@ -47,7 +47,7 @@ def get_image_coordinate(
 
 def get_subregion_center(
     all_path: str, subreg_path: str, target_path: str
-) -> tuple | None:
+) -> Union[tuple, None]:
     """
     Args:
         all_path (str): フルスクリーン画像のパス

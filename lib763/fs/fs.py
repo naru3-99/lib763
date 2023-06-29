@@ -2,11 +2,12 @@ import os
 import shutil
 import tarfile
 import zipfile
+from typing import Union
 from lib763.fs.path import get_all_dir_path_in, get_all_file_path_in
 from lib763.fs.save_load import load_sentence, save_sentence
 
 
-def mkdir(target_dir: str, folder_name: str) -> str | None:
+def mkdir(target_dir: str, folder_name: str) -> Union[str, None]:
     """
     指定したパスに新しいディレクトリを作成します。
 
@@ -28,7 +29,7 @@ def mkdir(target_dir: str, folder_name: str) -> str | None:
     return new_folder_path
 
 
-def create_serial_dir(target_dir: str) -> str | None:
+def create_serial_dir(target_dir: str) -> Union[str, None]:
     """
     指定したパスに連番のディレクトリを作成します。
 
@@ -42,7 +43,7 @@ def create_serial_dir(target_dir: str) -> str | None:
     return mkdir(target_dir, str(get_len_of_dir_in(target_dir) + 1))
 
 
-def create_serial_file(target_dir: str, extension: str) -> str | None:
+def create_serial_file(target_dir: str, extension: str) -> Union[str, None]:
     """
     指定したパスに連番のファイルを作成します。
 

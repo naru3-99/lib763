@@ -27,14 +27,14 @@ class ChromeWindow:
         """
         return self.__window_active
 
-    def __prepare_window(self):
+    def __prepare_window(self) -> None:
         """ウィンドウの状態を確認し、必要な操作を行います。"""
         if self.__tab_count == 0:
             self.__create_chrome_window()
         if not self.get_window_active():
             self.activate_chrome()
 
-    def activate_chrome(self):
+    def activate_chrome(self) -> None:
         """Google Chromeウィンドウをアクティブにし、最大化します。"""
         chrome_title = "Google Chrome"
         pyautogui.getWindowsWithTitle(chrome_title)[0].activate()
@@ -69,12 +69,12 @@ class ChromeWindow:
         self.__mk.kb_input("enter")
         time.sleep(0.5)
 
-    def create_tab(self):
+    def create_tab(self) -> None:
         """新規タブを作成します。"""
         self.__mk.kb_input("ctrl+t")
         self.__tab_count += 1
 
-    def close_tab(self):
+    def close_tab(self) -> None:
         """現在のタブを閉じます。
 
         すべてのタブが閉じられた場合、ウィンドウの活性状態をFalseに設定します。
@@ -84,7 +84,7 @@ class ChromeWindow:
         if self.__tab_count == 0:
             self.set_window_active(False)
 
-    def close_window(self):
+    def close_window(self) -> None:
         """ウィンドウ全体を閉じます。
 
         この操作後、ウィンドウの活性状態はFalseになり、タブ数は0にリセットされます。
