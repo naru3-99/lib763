@@ -3,33 +3,41 @@ import chardet
 
 def get_file_encoding(path: str) -> str:
     """
-    @param:
-        path: (str) 読み込むファイルのパス
-    @return:
-        str: ファイルのエンコードを予測した結果
-    パスで指定されたファイルのエンコードを予測します。
+    Given a file path, detects and returns the file's encoding.
+
+    Args:
+        path (str): The path of the file to read.
+
+    Returns:
+        str: The predicted encoding of the file.
+
+    Raises:
+        Exception: If there's an error opening/reading the file or detecting its encoding.
     """
     try:
         with open(path, "rb") as f:
             result = chardet.detect(f.read())
         return result["encoding"]
     except Exception as e:
-        print(f"エラーが発生しました: {e}")
-        return None
+        raise Exception(f"Error occurred while getting file encoding: {e}")
 
 
 def change_encoding(sentence: str, before: str, after: str) -> str:
     """
-    @param:
-        sentence: (str) エンコードを変更する文字列
-        before: (str) 変更前のエンコーディング
-        after: (str) 変更後のエンコーディング
-    @return:
-        str: エンコーディングが変更された文字列
-    文字列のエンコーディングを変更します。
+    Changes the encoding of a given string.
+
+    Args:
+        sentence (str): The string whose encoding needs to be changed.
+        before (str): The original encoding of the string.
+        after (str): The target encoding to change to.
+
+    Returns:
+        str: The string with its encoding changed.
+
+    Raises:
+        Exception: If there's an error changing the encoding of the string.
     """
     try:
         return sentence.encode(before).decode(after)
     except Exception as e:
-        print(f"エラーが発生しました: {e}")
-        return None
+        raise Exception(f"Error occurred while changing encoding: {e}")
