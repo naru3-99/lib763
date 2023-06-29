@@ -199,3 +199,36 @@ def rename(target_dir: str, before: str, after: str, force=False) -> bool:
     except Exception as e:
         print(f"Error renaming file: {e}")
         return False
+
+
+def move_file(src_path: str, dst_path: str) -> bool:
+    """Move a file from src_path to dst_path.
+
+    This function moves a file from the source path to the destination path.
+    If the destination directory doesn't exist, it is created.
+    The function will print out information about the operation.
+    In case of an exception, the error message is printed.
+
+    Args:
+        src_path (str): The source file path.
+        dst_path (str): The destination file path.
+
+    Returns:
+        bool: True if the file was successfully moved, False otherwise.
+    """
+
+    if not os.path.isfile(src_path):
+        print(f"No such file: '{src_path}'")
+        return False
+
+    dst_dir = os.path.dirname(dst_path)
+    if not os.path.exists(dst_dir):
+        os.makedirs(dst_dir)
+
+    try:
+        shutil.move(src_path, dst_path)
+        print(f"File moved: '{src_path}' to '{dst_path}'")
+        return True
+    except Exception as e:
+        print(f"Can't move file: '{src_path}' to '{dst_path}'. Reason: {e}")
+        return False
