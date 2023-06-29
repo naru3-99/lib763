@@ -1,3 +1,4 @@
+
 import paramiko
 from scp import SCPClient
 
@@ -68,6 +69,28 @@ class SSHOperator:
             raise SSHConnectionError("SSH接続が有効ではありません。")
         stdin, stdout, stderr = self._client.exec_command(command)
         return stdout.read().decode("utf-8")
+
+    def execute_sudo(self, command: str) -> str:
+        """
+        SSH接続を通じてsudo権限でリモートコマンドを実行する。
+
+        Args:
+            command (str): 実行するコマンド。
+            password (str): sudoパスワード。
+
+        Returns:
+            str: コマンドの実行結果。
+
+        Raises:
+            SSHConnectionError: SSH接続が有効でない場合に発生。
+        """
+        if not self.get_ssh_state():
+            raise SSHConnectionError("SSH接続が有効ではありません。")
+
+        sudo_command = f"echo {self._password} | sudo -S {command}"
+        stdin, stdout, stderr = self._client.exec_command(sudo_command)
+        return stdout.read().decode("utf-8")
+
 
     def send_file(self, local_path: str, remote_path: str):
         """
