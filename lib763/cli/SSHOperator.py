@@ -68,6 +68,7 @@ class SSHOperator:
         if not self.get_ssh_state():
             raise SSHConnectionError("SSH接続が有効ではありません。")
         stdin, stdout, stderr = self._client.exec_command(command)
+        exit_status = stdout.channel.recv_exit_status()
         return stdout.read().decode("utf-8")
 
     def execute_sudo(self, command: str) -> str:
@@ -76,7 +77,6 @@ class SSHOperator:
 
         Args:
             command (str): 実行するコマンド。
-            password (str): sudoパスワード。
 
         Returns:
             str: コマンドの実行結果。
@@ -89,6 +89,7 @@ class SSHOperator:
 
         sudo_command = f"echo {self._password} | sudo -S {command}"
         stdin, stdout, stderr = self._client.exec_command(sudo_command)
+        exit_status = stdout.channel.recv_exit_status()
         return stdout.read().decode("utf-8")
 
 
