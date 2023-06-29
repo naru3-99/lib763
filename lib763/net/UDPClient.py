@@ -21,14 +21,14 @@ class UDPClient:
         """socketを閉じて終了する"""
         self._sock.close()
 
-    def send_message(self, message: str) -> None:
+    def send_message(self, message: str, encoding: str = "ascii") -> None:
         """指定されたメッセージを全てのポートに送信します。
 
         Args:
             message: 送信するメッセージ
         """
         for port in self._ports:
-            self._sock.sendto(message.encode("ascii"), (self._host, port))
+            self._sock.sendto(message.encode(encoding), (self._host, port))
 
     def __enter__(self) -> "UDPClient":
         """コンテキストマネージャの開始時にソケットを初期化します。
