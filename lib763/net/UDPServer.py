@@ -17,6 +17,19 @@ class UDPServer:
         self._buffer_size = buffer_size
         self._sock = None
 
+    def close(self):
+        """socketを閉じて終了する"""
+        self._sock.close()
+
+    def receive_udp_packet(self) -> bytes:
+        """UDPパケットを受信します。
+
+        Returns:
+            受信したパケットのデータ
+        """
+        rcv_data, addr = self._sock.recvfrom(self._buffer_size)
+        return rcv_data
+
     def __enter__(self) -> "UDPServer":
         """コンテキストマネージャの開始時にソケットを初期化します。
 
@@ -30,12 +43,3 @@ class UDPServer:
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         """コンテキストマネージャの終了時にソケットをクローズします。"""
         self._sock.close()
-
-    def receive_udp_packet(self) -> bytes:
-        """UDPパケットを受信します。
-
-        Returns:
-            受信したパケットのデータ
-        """
-        rcv_data, addr = self._sock.recvfrom(self._buffer_size)
-        return rcv_data

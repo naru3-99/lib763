@@ -17,6 +17,19 @@ class UDPClient:
         self._buffer_size = buffer_size
         self._sock = None
 
+    def close(self):
+        """socketを閉じて終了する"""
+        self._sock.close()
+
+    def send_message(self, message: str) -> None:
+        """指定されたメッセージを全てのポートに送信します。
+
+        Args:
+            message: 送信するメッセージ
+        """
+        for port in self._ports:
+            self._sock.sendto(message.encode("ascii"), (self._host, port))
+
     def __enter__(self) -> "UDPClient":
         """コンテキストマネージャの開始時にソケットを初期化します。
 
@@ -29,12 +42,3 @@ class UDPClient:
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         """コンテキストマネージャの終了時にソケットをクローズします。"""
         self._sock.close()
-
-    def send_message(self, message: str) -> None:
-        """指定されたメッセージを全てのポートに送信します。
-
-        Args:
-            message: 送信するメッセージ
-        """
-        for port in self._ports:
-            self._sock.sendto(message.encode("ascii"), (self._host, port))
