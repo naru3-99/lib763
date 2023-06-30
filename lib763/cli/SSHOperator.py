@@ -1,4 +1,3 @@
-
 import paramiko
 from scp import SCPClient
 
@@ -92,7 +91,6 @@ class SSHOperator:
         exit_status = stdout.channel.recv_exit_status()
         return stdout.read().decode("utf-8")
 
-
     def send_file(self, local_path: str, remote_path: str):
         """
         ファイルをリモートシステムに送信する。
@@ -116,6 +114,8 @@ class SSHOperator:
         Returns:
             bool: SSH接続が有効な場合はTrue、そうでない場合はFalse。
         """
+        if self._client.get_transport() is None:
+            return False
         return self._client.get_transport().is_active()
 
     def exit(self):
@@ -129,4 +129,5 @@ class SSHConnectionError(Exception):
     """
     SSH接続エラーを処理するためのカスタム例外クラス。
     """
+
     pass

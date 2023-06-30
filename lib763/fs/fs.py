@@ -224,9 +224,7 @@ def rename(target_dir: str, before: str, after: str, force=False) -> bool:
         return False
     after_path = os.path.join(target_dir, after)
     if os.path.exists(after_path):
-        if force:
-            print(f"File {after_path} already exists, will be overwritten.")
-        else:
+        if not force:
             print(f"File already exists: {after_path}")
             return False
     try:
