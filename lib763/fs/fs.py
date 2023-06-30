@@ -29,6 +29,42 @@ def mkdir(target_dir: str, folder_name: str) -> Union[str, None]:
     return new_folder_path
 
 
+def ensure_path_exists(path: str) -> bool:
+    """Ensure the given path exists in the file system.
+
+    This function creates the directories and file if they do not exist.
+    If the path points to a directory, it will be created. If the path points to
+    a file, the directories will be created and an empty file will be generated.
+
+    Args:
+        path (str): The file or directory path that should be ensured to exist.
+
+    Returns:
+        bool: True if the path was successfully created, False if the path already exists.
+
+    Raises:
+        OSError: If there is a failure in directory or file creation due to a system-related error.
+    """
+    if path == "":
+        return False
+    if os.path.exists(path):
+        return False
+
+    if path.endswith("/"):
+        try:
+            os.makedirs(path, exist_ok=True)
+            return True
+        except OSError:
+            raise
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            pass
+    except OSError:
+        raise
+    return True
+
+
 def create_serial_dir(target_dir: str) -> Union[str, None]:
     """
     指定したパスに連番のディレクトリを作成します。
