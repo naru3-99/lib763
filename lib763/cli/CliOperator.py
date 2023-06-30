@@ -1,4 +1,5 @@
 import subprocess
+import time
 
 
 class CliOperator:
@@ -27,23 +28,28 @@ class CliOperator:
         注意:
             タイムアウトが発生した場合、プロセスは強制的に終了されます。
         """
-        self.process = subprocess.Popen(
-            command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            shell=True,
-        )
-        pid = self.process.pid
-
         try:
-            stdout, stderr = self.process.communicate(timeout=timeout)
-            returncode = self.process.returncode
+            self.process = subprocess.Popen(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                shell=True,
+            )
+            pid = self.process.pid
+
+            if timeout is None:
+                stdout, stderr = self.process.communicate(timeout=timeout)
+                returncode = self.process.returncode
+            else:
+                time.sleep(timeout)
+                self.process.terminate()
+                stdout, stderr = self.process.communicate(timeout=timeout)
+                returncode = self.process.returncode
+
         except subprocess.TimeoutExpired:
-            # タイムアウトが発生した場合、プロセスを終了する
             self.process.kill()
-            stdout, stderr = self.process.communicate()
+            stdout, stderr = self.process.communicate(timeout=timeout)
             returncode = self.process.returncode
         finally:
             self.process = None
