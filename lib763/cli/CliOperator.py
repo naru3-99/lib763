@@ -49,9 +49,11 @@ class CliOperator:
 
         except subprocess.TimeoutExpired:
             self.process.kill()
-            stdout, stderr = self.process.communicate(timeout=timeout)
-            returncode = self.process.returncode
+            try:
+                stdout, stderr = self.process.communicate(timeout=timeout)
+                returncode = self.process.returncode
+            except:
+                stdout, stderr, returncode = (None, None, None)
         finally:
             self.process = None
-
         return stdout, stderr, returncode, pid
