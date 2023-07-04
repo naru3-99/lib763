@@ -20,7 +20,7 @@ class CLIManager:
             timeout: Time in seconds after which the process should be killed if not finished.
 
         Returns:
-            A dictionary with stdout, stderr, return code, and process id.
+            return code and process id.
         """
 
         # Start a new subprocess
@@ -28,36 +28,6 @@ class CLIManager:
             command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         pid = process.pid
-        stdout_lock = threading.Lock()
-        stderr_lock = threading.Lock()
-
-        def stream_reader(stream, output_list, lock):
-            """
-            Read lines from a stream (stdout or stderr) and add them to the output_list.
-
-            Args:
-                stream: Stream to read from.
-                output_list: List to add read lines to.
-                lock: Lock object for synchronizing access to the output_list.
-            """
-            while not stream.closed:
-                line = stream.readline()
-                if not line:
-                    break
-                with lock:
-                    output_list.append(line.decode("utf8"))
-
-        stdout_lines = []
-        stderr_lines = []
-        # Start two threads that will read stdout and stderr
-        stdout_thread = threading.Thread(
-            target=stream_reader, args=(process.stdout, stdout_lines, stdout_lock)
-        )
-        stderr_thread = threading.Thread(
-            target=stream_reader, args=(process.stderr, stderr_lines, stderr_lock)
-        )
-        stdout_thread.start()
-        stderr_thread.start()
 
         if timeout is not None:
             # If a timeout was specified, get the start time
@@ -70,14 +40,4 @@ class CLIManager:
                 process.wait()
                 break
 
-        # Wait for the threads to finish
-        stdout_thread.join()
-        stderr_thread.join()
-
-        with stdout_lock:
-            stdout = "".join(stdout_lines)
-
-        with stderr_lock:
-            stderr = "".join(stderr_lines)
-
-        return stdout, stderr, process.returncode, pid
+        return process.returncode, pid
