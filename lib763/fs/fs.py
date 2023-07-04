@@ -189,7 +189,7 @@ def create_zip_archive(directory_path, archive_name):
         directory_path (str): 保存するディレクトリ
         archive_name (str): アーカイブファイルの名前
     """
-    shutil.make_archive(archive_name, "zip", directory_path)
+    shutil.make_archive(os.path.join(directory_path,archive_name), "zip", directory_path)
 
 
 def extract_zip_archive(extract_path, archive_name):
