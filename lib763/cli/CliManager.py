@@ -80,9 +80,4 @@ class CLIManager:
         with stderr_lock:
             stderr = "".join(stderr_lines)
 
-        return {
-            "stdout": stdout,
-            "stderr": stderr,
-            "returncode": process.returncode,
-            "pid": pid,
-        }
+        return stdout, stderr, process.returncode, pid
