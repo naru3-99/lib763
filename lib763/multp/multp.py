@@ -1,4 +1,4 @@
-from multiprocessing import Process
+from multiprocessing import Process, Pool, cpu_count
 from typing import Any, Callable, List, Union
 
 
@@ -26,3 +26,24 @@ def stop_process(process: Process) -> None:
     process (Process): 終了させるプロセスオブジェクト
     """
     process.terminate()
+
+
+def parallel_process(func: Callable[[Any], Any], data_list: List[Any]) -> List[Any]:
+    """
+    Given a function and a list, applies the function to every element in the list using
+    multiprocessing to parallelize the operation and return the result list.
+
+    Args:
+        func (Callable[[Any], Any]): A function that takes a single argument and returns a value.
+        data_list (List[Any]): A list of elements to which the function will be applied.
+
+    Returns:
+        List[Any]: A list of results after applying the function to the elements of data_list.
+
+    """
+    pool = Pool(cpu_count())
+    result = pool.map(func, data_list)
+
+    pool.close()
+    pool.join()
+    return result
