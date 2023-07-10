@@ -1,4 +1,6 @@
 import chardet
+from lib763.fs.save_load import load_sentence, save_sentence
+from lib763.fs.fs import rmrf
 
 
 def get_file_encoding(path: str) -> str:
@@ -41,3 +43,23 @@ def change_encoding(sentence: str, before: str, after: str) -> str:
         return sentence.encode(before).decode(after)
     except Exception as e:
         raise Exception(f"Error occurred while changing encoding: {e}")
+
+
+def change_file_encoding(path: str, encoding: str) -> None:
+    """
+    Change the encoding of a file.
+
+    This function reads a file, determines its current encoding,
+    reads the contents, deletes the file, and saves the content back to
+    a new file with a new encoding.
+
+    Args:
+        path: The path to the file.
+        encoding: The new encoding to apply to the file.
+
+    Raises:
+        IOError: An error occurred accessing the file.
+    """
+    sentence = load_sentence(path, encoding=get_file_encoding(path))
+    rmrf(path)
+    save_sentence(sentence, path, encoding=encoding)
