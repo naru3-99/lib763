@@ -31,7 +31,7 @@ class BashOperator:
         self.wait = time_to_wait
         self.cwd = self.get_current_dir()
 
-    def execute(self, command:str, timeout=10):
+    def execute(self, command: str, timeout=10):
         """Executes a bash command.
 
         Args:
@@ -86,7 +86,7 @@ class BashOperator:
             output.append(line)
         return output[-1].strip()
 
-    def change_dir(self, new_dir:str):
+    def change_dir(self, new_dir: str):
         """Changes the working directory of the bash shell.
 
         Args:
@@ -134,3 +134,16 @@ class BashOperator:
                 break
             output.append(line)
         return "".join(output)
+
+    def communicate(self, input_data: str, timeout=5):
+        """communicate with shell
+        for user-input like python-input() method
+
+        Args:
+            input_data (str): something to input, endwith '\n'
+            timeout (int, optional): timeout seconds. Defaults to 5.
+
+        Returns:
+            tupple: stdout and stderr
+        """
+        return self.shell.communicate(input_data, timeout=timeout)
