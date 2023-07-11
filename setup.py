@@ -6,7 +6,6 @@ setup(
     description="naru's library",
     author="naru",
     license="MIT",
-    packages=find_packages(),
     install_requires=[
         "paramiko",
         "chardet",
