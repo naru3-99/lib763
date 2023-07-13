@@ -7,66 +7,76 @@ import pyperclip
 import time
 
 
-class Macro:
-    """マクロ処理を提供するクラス。"""
+class Macro(MouseKeyboard):
+    """
+    Class for automating mouse and keyboard actions on the computer.
 
-    def __init__(self) -> None:
-        self.mk = MouseKeyboard()
+    Inherits from the MouseKeyboard class.
 
-    def recognize_and_click_image(self, image_path: str) -> None:
-        """画像を認識し、その画像が存在する座標をクリックします。
+    Attributes:
+        wait_time (float): The wait time between keyboard or mouse actions.
+    """
+
+    def __init__(self, wait_time=0.5) -> None:
+        """
+        Constructs all the necessary attributes for the Macro object.
 
         Args:
-            image_path: 認識させる画像のパス
+            wait_time (float): The wait time between keyboard or mouse actions. Defaults to 0.5.
+        """
+        super().__init__(wait_time)
+
+    def click_image(self, image_path: str) -> None:
+        """
+        Clicks on an image by taking a screenshot, identifying the image within the screenshot, and clicking on it.
+
+        Args:
+            image_path (str): The path of the image to click on.
         """
         screenshot_path = "./screenshot.png"
-        self.mk.get_screen_shot(screenshot_path)
+        self.get_screen_shot(screenshot_path)
         coordinate = get_image_coordinate(screenshot_path, image_path)
         if coordinate is None:
             print("Error: No object found")
             return
-        self.mk.click_coordinate(coordinate)
+        self.click_coordinate(coordinate)
         rmrf(screenshot_path)
 
-    def get_mouse_keyboard(self) -> None:
-        """MouseKeyboardインスタンスを取得します。
-
-        Returns:
-            MouseKeyboardのインスタンス
-        """
-        return self.mk
-
     def get_screen_shot(self, path: str) -> None:
-        """スクリーンショットを撮影し、指定したパスに保存します。
+        """
+        Takes a screenshot and saves it to a specified path.
 
         Args:
-            path: スクリーンショットの保存先パス
+            path (str): The path to save the screenshot to.
         """
         ImageGrab.grab().save(path)
         time.sleep(1)
 
-    def get_clipboard_text(self) -> str:
-        """クリップボードからテキストを取得します。
+    def get_copied_text(self) -> str:
+        """
+        Retrieves the text currently copied to the clipboard.
 
         Returns:
-            クリップボードのテキスト
+            str: The text currently copied to the clipboard.
         """
         return pyperclip.paste()
 
-    def copy_to_clipboard(self, text: str) -> None:
-        """テキストをクリップボードにコピーします。
+    def copy_text(self, text: str) -> None:
+        """
+        Copies a specified text to the clipboard.
 
         Args:
-            text: コピーするテキスト
+            text (str): The text to copy to the clipboard.
         """
         pyperclip.copy(text)
 
     def paste_text(self, text: str) -> None:
-        """クリップボードにテキストをコピーし、それを貼り付けます。
+        """
+        Pastes a specified text by copying it to the clipboard and then simulating a "ctrl+v" keyboard input.
 
         Args:
-            text: 貼り付けるテキスト
+            text (str): The text to paste.
         """
-        self.copy_to_clipboard(text)
-        self.mk.kb_input("ctrl+v")
+        self.copy_text(text)
+        self.kb_input("ctrl+v")
         time.sleep(1)

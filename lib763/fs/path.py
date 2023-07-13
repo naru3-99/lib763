@@ -34,7 +34,7 @@ def get_all_dir_path_in(target_dir: str) -> list:
     ]
 
 
-def get_all_folder_name_in_nextdir(target_dir: str) -> list:
+def get_dir_names_in(target_dir: str) -> list:
     """対象のフォルダ直下のフォルダ名を取得します。
 
     Args:
@@ -50,7 +50,7 @@ def get_all_folder_name_in_nextdir(target_dir: str) -> list:
     ]
 
 
-def get_all_file_in_nextdir(target_dir: str) -> list:
+def get_all_file_names_in(target_dir: str) -> list:
     """対象のフォルダ直下のファイル名を取得します。
 
     Args:

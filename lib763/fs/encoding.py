@@ -1,5 +1,5 @@
 import chardet
-from lib763.fs.save_load import load_sentence, save_sentence
+from lib763.fs.save_load import load_str_from_file, save_str_to_file
 from lib763.fs.fs import rmrf
 
 
@@ -60,6 +60,6 @@ def change_file_encoding(path: str, encoding: str) -> None:
     Raises:
         IOError: An error occurred accessing the file.
     """
-    sentence = load_sentence(path, encoding=get_file_encoding(path))
+    sentence = load_str_from_file(path, encoding=get_file_encoding(path))
     rmrf(path)
-    save_sentence(sentence, path, encoding=encoding)
+    save_str_to_file(sentence, path, encoding=encoding)

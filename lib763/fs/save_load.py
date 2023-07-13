@@ -2,7 +2,7 @@ import pickle
 import os
 
 
-def save_pickle(obj: object, path: str) -> None:
+def save_object_to_file(obj: object, path: str) -> None:
     """オブジェクトをpickleファイルとして保存します。
 
     Args:
@@ -13,7 +13,7 @@ def save_pickle(obj: object, path: str) -> None:
         pickle.dump(obj, f)
 
 
-def load_pickle(path: str) -> object:
+def load_object_from_file(path: str) -> object:
     """指定したパスのpickleファイルからオブジェクトを読み込みます。
 
     Args:
@@ -32,7 +32,7 @@ def load_pickle(path: str) -> object:
     return obj
 
 
-def save_sentence(sentence: str, path: str, encoding="utf-8") -> None:
+def save_str_to_file(sentence: str, path: str, encoding="utf-8") -> None:
     """文字列データを指定したパスにテキストファイルとして保存します。
 
     Args:
@@ -44,7 +44,7 @@ def save_sentence(sentence: str, path: str, encoding="utf-8") -> None:
         f.write(sentence)
 
 
-def append_sentence(sentence: str, path: str, encoding="utf-8") -> None:
+def append_str_to_file(sentence: str, path: str, encoding="utf-8") -> None:
     """文字列データを指定したパスに追記します。
 
     Args:
@@ -61,7 +61,7 @@ def append_sentence(sentence: str, path: str, encoding="utf-8") -> None:
         f.write(sentence)
 
 
-def load_sentence(path: str, encoding="utf-8") -> str:
+def load_str_from_file(path: str, encoding="utf-8") -> str:
     """指定したパスのテキストファイルの内容を取得します。
 
     Args:

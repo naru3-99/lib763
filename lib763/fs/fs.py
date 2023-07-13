@@ -1,10 +1,9 @@
 import os
 import shutil
-import tarfile
 import zipfile
 from typing import Union
-from lib763.fs.path import get_all_dir_path_in, get_all_file_path_in
-from lib763.fs.save_load import load_sentence, save_sentence
+from lib763.fs.path import get_all_file_names_in, get_dir_names_in
+from lib763.fs.save_load import load_str_from_file, save_str_to_file
 
 
 def mkdir(target_dir: str, folder_name: str) -> Union[str, None]:
@@ -76,7 +75,7 @@ def create_serial_dir(target_dir: str) -> Union[str, None]:
         str: 成功した場合には作成したディレクトリのパス
         None: 親ディレクトリが存在しない場合や、作成しようとしたディレクトリがすでに存在する場合
     """
-    return mkdir(target_dir, str(get_len_of_dir_in(target_dir) + 1))
+    return mkdir(target_dir, str(len(get_dir_names_in(target_dir)) + 1))
 
 
 def create_serial_file(target_dir: str, extension: str) -> Union[str, None]:
@@ -91,37 +90,13 @@ def create_serial_file(target_dir: str, extension: str) -> Union[str, None]:
         str: 成功した場合には作成したファイルの名前
         None: ファイルの作成に失敗した場合
     """
-    file_name = f"{get_len_of_file_in(target_dir)}.{extension}"
+    file_name = f"{get_all_file_names_in(target_dir)}.{extension}"
     file_path = os.path.join(target_dir, file_name)
     try:
-        save_sentence("", file_path)
+        save_str_to_file("", file_path)
         return file_name
     except:
         return None
-
-
-def get_len_of_dir_in(target_dir: str) -> int:
-    """ディレクトリ内のサブディレクトリの数を返します。
-
-    Args:
-        target_dir (str): 対象とするディレクトリ
-
-    Returns:
-        int: ディレクトリ内のサブディレクトリの数
-    """
-    return len(get_all_dir_path_in(target_dir))
-
-
-def get_len_of_file_in(target_dir: str) -> int:
-    """ディレクトリ内のファイルの数を返します。
-
-    Args:
-        target_dir (str): 対象とするディレクトリ
-
-    Returns:
-        int: ディレクトリ内のファイルの数
-    """
-    return len(get_all_file_path_in(target_dir))
 
 
 def rmrf(path: str) -> None:
@@ -157,50 +132,7 @@ def copy_file(load_path: str, save_path: str) -> None:
         load_path (str): コピー元のパス
         save_path (str): コピー先のパス
     """
-    return save_sentence(load_sentence(load_path), save_path)
-
-
-def create_tar_archive(directory_path: str, archive_name: str) -> None:
-    """tarによる圧縮を行います。
-
-    Args:
-        directory_path (str): 保存するディレクトリ
-        archive_name (str): アーカイブファイルの名前
-    """
-    with tarfile.open(archive_name, "w") as tar:
-        tar.add(directory_path, arcname="directory")
-
-
-def extract_tar_archive(extract_path: str, archive_name: str) -> None:
-    """tarによる解凍を行います。
-
-    Args:
-        extract_path (str): 解凍するパス
-        archive_name (str): アーカイブファイルの名前
-    """
-    with tarfile.open(archive_name, "r") as tar:
-        tar.extractall(extract_path)
-
-
-def create_zip_archive(directory_path, archive_name):
-    """zipによる圧縮を行います。
-
-    Args:
-        directory_path (str): 保存するディレクトリ
-        archive_name (str): アーカイブファイルの名前
-    """
-    shutil.make_archive(archive_name, "zip", directory_path)
-
-
-def extract_zip_archive(extract_path, archive_name):
-    """zipによる解凍を行います。
-
-    Args:
-        extract_path (str): 解凍するパス
-        archive_name (str): アーカイブファイルの名前
-    """
-    with zipfile.ZipFile(archive_name, "r") as zip_ref:
-        zip_ref.extractall(extract_path)
+    return save_str_to_file(load_str_from_file(load_path), save_path)
 
 
 def rename(target_dir: str, before: str, after: str, force=False) -> bool:
@@ -266,3 +198,24 @@ def move_file(src_path: str, dst_path: str) -> bool:
     except Exception as e:
         print(f"Can't move file: '{src_path}' to '{dst_path}'. Reason: {e}")
         return False
+
+
+def create_zip_archive(directory_path, archive_name):
+    """zipによる圧縮を行います。
+
+    Args:
+        directory_path (str): 保存するディレクトリ
+        archive_name (str): アーカイブファイルの名前
+    """
+    shutil.make_archive(archive_name, "zip", directory_path)
+
+
+def extract_zip_archive(extract_path, archive_name):
+    """zipによる解凍を行います。
+
+    Args:
+        extract_path (str): 解凍するパス
+        archive_name (str): アーカイブファイルの名前
+    """
+    with zipfile.ZipFile(archive_name, "r") as zip_ref:
+        zip_ref.extractall(extract_path)
