@@ -90,7 +90,7 @@ def create_serial_file(target_dir: str, extension: str) -> Union[str, None]:
         str: 成功した場合には作成したファイルの名前
         None: ファイルの作成に失敗した場合
     """
-    file_name = f"{get_all_file_names_in(target_dir)}.{extension}"
+    file_name = f"{len(get_all_file_names_in(target_dir))}.{extension}"
     file_path = os.path.join(target_dir, file_name)
     try:
         save_str_to_file("", file_path)
