@@ -2,9 +2,18 @@ import cv2
 from typing import Union
 
 
+class ImageReadError(Exception):
+    """Exception raised for errors in the image reading process."""
+
+    pass
+
+
 def read_image(path: str):
     """指定されたパスから画像を読み込む"""
-    return cv2.imread(path)
+    img = cv2.imread(path)
+    if img is None:
+        raise ImageReadError(f"Error reading image from path: {path}")
+    return img
 
 
 def image_contains(all_picture_path: str, target_picture_path: str) -> bool:

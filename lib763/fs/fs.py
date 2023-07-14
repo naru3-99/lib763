@@ -2,7 +2,7 @@ import os
 import shutil
 import zipfile
 from typing import Union
-from lib763.fs.path import get_all_file_names_in, get_dir_names_in
+from lib763.fs.path import get_all_file_names_in, get_all_dir_names_in
 from lib763.fs.save_load import load_str_from_file, save_str_to_file
 
 
@@ -75,7 +75,7 @@ def create_serial_dir(target_dir: str) -> Union[str, None]:
         str: 成功した場合には作成したディレクトリのパス
         None: 親ディレクトリが存在しない場合や、作成しようとしたディレクトリがすでに存在する場合
     """
-    return mkdir(target_dir, str(len(get_dir_names_in(target_dir)) + 1))
+    return mkdir(target_dir, str(len(get_all_dir_names_in(target_dir)) + 1))
 
 
 def create_serial_file(target_dir: str, extension: str) -> Union[str, None]:

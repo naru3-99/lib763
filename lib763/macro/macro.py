@@ -7,6 +7,12 @@ import pyperclip
 import time
 
 
+class ImageNotFoundError(Exception):
+    """Exception raised when an image is not found within another image."""
+
+    pass
+
+
 class Macro(MouseKeyboard):
     """
     Class for automating mouse and keyboard actions on the computer.
@@ -26,19 +32,20 @@ class Macro(MouseKeyboard):
         """
         super().__init__(wait_time)
 
-    def click_image(self, image_path: str) -> None:
+    def click_image(
+        self, image_path: str, screenshot_path: str = "./screenshot.png"
+    ) -> None:
         """
         Clicks on an image by taking a screenshot, identifying the image within the screenshot, and clicking on it.
 
         Args:
             image_path (str): The path of the image to click on.
+            screenshot_path (str): The path to save the screenshot to. Defaults to "./screenshot.png".
         """
-        screenshot_path = "./screenshot.png"
         self.get_screen_shot(screenshot_path)
         coordinate = get_image_coordinate(screenshot_path, image_path)
         if coordinate is None:
-            print("Error: No object found")
-            return
+            raise ImageNotFoundError("Error: No object found")
         self.click_coordinate(coordinate)
         rmrf(screenshot_path)
 
@@ -50,16 +57,6 @@ class Macro(MouseKeyboard):
             path (str): The path to save the screenshot to.
         """
         ImageGrab.grab().save(path)
-        time.sleep(1)
-
-    def get_copied_text(self) -> str:
-        """
-        Retrieves the text currently copied to the clipboard.
-
-        Returns:
-            str: The text currently copied to the clipboard.
-        """
-        return pyperclip.paste()
 
     def copy_text(self, text: str) -> None:
         """
@@ -80,3 +77,12 @@ class Macro(MouseKeyboard):
         self.copy_text(text)
         self.kb_input("ctrl+v")
         time.sleep(1)
+
+    def get_copied_text(self) -> str:
+        """
+        Retrieves the text currently copied to the clipboard.
+
+        Returns:
+            str: The text currently copied to the clipboard.
+        """
+        return pyperclip.paste()

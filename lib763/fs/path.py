@@ -34,7 +34,7 @@ def get_all_dir_path_in(target_dir: str) -> list:
     ]
 
 
-def get_dir_names_in(target_dir: str) -> list:
+def get_all_dir_names_in(target_dir: str) -> list:
     """対象のフォルダ直下のフォルダ名を取得します。
 
     Args:
@@ -44,9 +44,9 @@ def get_dir_names_in(target_dir: str) -> list:
         対象のフォルダ直下のフォルダ名
     """
     return [
-        entry
-        for entry in os.listdir(target_dir)
-        if os.path.isdir(os.path.join(target_dir, entry))
+        dir_name
+        for dir_name in os.listdir(target_dir)
+        if os.path.isdir(os.path.join(target_dir, dir_name))
     ]
 
 
@@ -60,9 +60,9 @@ def get_all_file_names_in(target_dir: str) -> list:
         対象のフォルダ直下のファイル名
     """
     return [
-        entry
-        for entry in os.listdir(target_dir)
-        if os.path.isfile(os.path.join(target_dir, entry))
+        file_name
+        for file_name in os.listdir(target_dir)
+        if os.path.isfile(os.path.join(target_dir, file_name))
     ]
 
 

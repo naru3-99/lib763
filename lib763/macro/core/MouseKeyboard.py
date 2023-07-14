@@ -4,6 +4,12 @@ import mouse
 import ctypes
 
 
+class InvalidCoordinateError(Exception):
+    """Exception raised for invalid coordinate inputs."""
+
+    pass
+
+
 class MouseKeyboard:
     """
     Class for controlling a computer's mouse and keyboard.
@@ -76,9 +82,11 @@ class MouseKeyboard:
         try:
             x, y = coordinate
             if x is None or y is None:
-                raise ValueError
+                raise InvalidCoordinateError(
+                    "One or both of the coordinates are None. Maybe the image couldn't be recognized."
+                )
         except ValueError:
-            print("coordinate is None\nmaybe couldn't recognize image")
+            print("coordinate is None")
             return
         self.move_mouse(coordinate)
         self.click()
