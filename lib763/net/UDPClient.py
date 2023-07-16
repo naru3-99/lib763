@@ -1,44 +1,47 @@
 import socket
+from typing import Optional
 
 
 class UDPClient:
-    """UDPクライアントを管理するクラス。"""
+    """A class to manage a UDP client."""
 
     def __init__(self, host: str, ports: list, buffer_size: int) -> None:
-        """UDPクライアントの初期設定を行います。
+        """
+        Initialize the UDP client.
 
         Args:
-            host: ホスト名またはIPアドレス
-            ports: 送信先のポート番号のリスト
-            buffer_size: 送信バッファのサイズ
+            host (str): The hostname or IP address.
+            ports (list): The list of port numbers to send to.
+            buffer_size (int): The size of the send buffer.
         """
         self._host = host
         self._ports = ports
         self._buffer_size = buffer_size
-        self._sock = None
-
-    def close(self):
-        """socketを閉じて終了する"""
-        self._sock.close()
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def send_message(self, message: str, encoding: str = "ascii") -> None:
-        """指定されたメッセージを全てのポートに送信します。
+        """
+        Send the specified message to all ports.
 
         Args:
-            message: 送信するメッセージ
+            message (str): The message to send.
+            encoding (str): The string encoding. Default is "ascii".
         """
         for port in self._ports:
-            self._sock.sendto(message.encode(encoding), (self._host, port))
+            try:
+                self._sock.sendto(message.encode(encoding), (self._host, port))
+            except Exception as e:
+                print(f"Error while sending message: {str(e)}")
 
     def __enter__(self) -> "UDPClient":
-        """コンテキストマネージャの開始時にソケットを初期化します。
+        """
+        Initialize the context manager.
 
         Returns:
-            自身のインスタンス
+            UDPClient: The instance of this class.
         """
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
-        """コンテキストマネージャの終了時にソケットをクローズします。"""
+        """Close the socket when exiting the context manager."""
         self._sock.close()
