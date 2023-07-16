@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="lib763",
-    version="0.4.3",
+    version="0.4.4",
     description="naru's library",
     author="naru",
     license="MIT",
