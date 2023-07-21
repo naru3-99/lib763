@@ -57,8 +57,7 @@ def ensure_path_exists(path: str) -> bool:
             raise
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w") as f:
-            pass
+        save_str_to_file("", path)
     except OSError:
         raise
     return True
