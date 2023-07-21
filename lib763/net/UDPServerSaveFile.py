@@ -76,6 +76,7 @@ class OrderedSaver:
         self.current_key = 0
         self.saver_loop = True
         self.condition = Condition()
+        self.current_save_key = 0
 
     def append_data(self, save_str: str) -> None:
         """
@@ -99,7 +100,8 @@ class OrderedSaver:
                 if len(self.data_dict.keys()) == 0:
                     self.condition.wait()
             with self.dict_lock:
-                save_str = self.data_dict.pop(min(self.data_dict.keys()))
+                save_str = self.data_dict.pop(self.current_save_key)
+                self.current_save_key += 1
             append_str_to_file(save_str, self.save_path)
 
     def exit(self) -> None:
