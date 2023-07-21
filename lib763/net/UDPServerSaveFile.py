@@ -89,20 +89,18 @@ class OrderedSaver:
                     self.condition.wait()
                 with self.dict_lock:
                     save_str_ls = self.data_dict.pop(self.current_save_key)
-                self.current_save_key += 1
 
             if self.func is None:
-                if self.current_save_key != 1:
-                    append_str_to_file("\n", self.save_path)
-                append_str_to_file("\n".join(save_str_ls), self.save_path)
+                append_str_to_file("\n".join(save_str_ls) + "\n", self.save_path)
                 continue
 
-            save_str = "" if self.current_save_key == 1 else "\n"
+            save_str = ""
             for save_str_line in save_str_ls:
                 edited_str = self.func(save_str_line)
                 if edited_str:
                     save_str += edited_str + "\n"
-            append_str_to_file(save_str, self.save_path)
+            append_str_to_file(save_str + "\n", self.save_path)
+            self.current_save_key += 1
 
     def exit(self) -> None:
         """
