@@ -1,7 +1,7 @@
-from typing import Dict
 from lib763.net.UDPServer import UDPServer
 from lib763.fs.save_load import append_str_to_file
-from multiprocessing import Process, Lock, Condition
+from lib763.multp.multp import start_process
+from multiprocessing import Lock, Condition, Manager
 
 
 class UdpServerSaveFile(UDPServer):
@@ -18,7 +18,7 @@ class UdpServerSaveFile(UDPServer):
         super().__init__(host, port, buffer_size)
         self.FINISH_COMMAND = "\x02FINISH\x03"
         self.SAVE_COMMAND = "\x02SAVE\x03"
-        self.saver = OrderedSaver(save_path)
+        self.save_path = save_path
 
     def edit_save_str(self, recieved_str: str) -> str:
         """
@@ -40,17 +40,19 @@ class UdpServerSaveFile(UDPServer):
         The main loop for receiving UDP packets and saving them to a file.
         """
         decoded_msg_ls = []
-        Process(target=self.saver.main).start()
+        saver = OrderedSaver(self.save_path)
+        start_process(saver.main)
         try:
             while True:
                 decoded_msg = self.receive_udp_packet().decode()
+                print(decoded_msg)
                 if decoded_msg == self.FINISH_COMMAND:
                     self.__exit__(None, None, None)
-                    self.saver.exit()
+                    saver.exit()
                     return
                 elif decoded_msg == self.SAVE_COMMAND:
                     if len(decoded_msg_ls) != 0:
-                        self.saver.append_data(
+                        saver.append_data(
                             "\n".join(
                                 [self.edit_save_str(msg) for msg in decoded_msg_ls]
                             )
@@ -72,7 +74,7 @@ class OrderedSaver:
         """
         self.save_path = save_path
         self.dict_lock = Lock()
-        self.data_dict = {}
+        self.data_dict = Manager().dict()
         self.current_key = 0
         self.saver_loop = True
         self.condition = Condition()
@@ -88,8 +90,8 @@ class OrderedSaver:
         with self.dict_lock:
             self.data_dict[self.current_key] = save_str
             self.current_key += 1
-        with self.condition:
-            self.condition.notify()
+            with self.condition:
+                self.condition.notify()
 
     def main(self) -> None:
         """
@@ -99,8 +101,8 @@ class OrderedSaver:
             with self.condition:
                 if len(self.data_dict.keys()) == 0:
                     self.condition.wait()
-            with self.dict_lock:
-                save_str = self.data_dict.pop(self.current_save_key)
+                with self.dict_lock:
+                    save_str = self.data_dict.pop(self.current_save_key)
                 self.current_save_key += 1
             append_str_to_file(save_str, self.save_path)
 
