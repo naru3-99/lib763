@@ -49,10 +49,13 @@ class UdpServerSaveFile(UDPServer):
                     self.saver.exit()
                     return
                 elif decoded_msg == self.SAVE_COMMAND:
-                    self.saver.append_data(
-                        "\n".join([self.edit_save_str(msg) for msg in decoded_msg_ls])
-                    )
-                    decoded_msg_ls.clear()
+                    if len(decoded_msg_ls) != 0:
+                        self.saver.append_data(
+                            "\n".join(
+                                [self.edit_save_str(msg) for msg in decoded_msg_ls]
+                            )
+                        )
+                        decoded_msg_ls.clear()
                 else:
                     decoded_msg_ls.append(decoded_msg)
         except Exception as e:
