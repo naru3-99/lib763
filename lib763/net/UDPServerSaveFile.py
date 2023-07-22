@@ -41,6 +41,8 @@ class UdpServerSaveFile(UDPServer):
         while self.loop:
             try:
                 self.process_received_data()
+            except KeyboardInterrupt:
+                return
             except Exception as e:
                 print(f"Error in main loop: {str(e)}")
 
