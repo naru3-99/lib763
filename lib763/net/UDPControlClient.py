@@ -1,4 +1,3 @@
-
 from lib763.net.UDPClient import UDPClient
 import time
 from typing import List, Any, Optional
@@ -45,16 +44,20 @@ class UDPControlClient(UDPClient):
             except Exception as e:
                 print(f"Error in main loop: {str(e)}")
 
-    def exit_all_client(self) -> None:
+    def exit(self) -> None:
         """
         Send the FINISH_COMMAND and exit the client.
         """
-        self.send_message(self.SAVE_COMMAND)
         self.send_message(self.FINISH_COMMAND)
         self.loop = False
         self.__exit__(None, None, None)
 
-    def __exit__(self, exc_type: Optional[type], exc_value: Optional[Exception], traceback: Optional[Any]) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[type],
+        exc_value: Optional[Exception],
+        traceback: Optional[Any],
+    ) -> None:
         """
         Closes the socket connection when exiting a with statement.
 

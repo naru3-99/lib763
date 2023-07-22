@@ -68,7 +68,7 @@ class UdpServerSaveFile(UDPServer):
             )
             self.decoded_messages.clear()
 
-    def exit_this_server(self) -> None:
+    def exit(self) -> None:
         """Exits the server and finishes saving any remaining data."""
         if len(self.decoded_messages) != 0:
             self.save_received_data()
