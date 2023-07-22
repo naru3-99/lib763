@@ -2,7 +2,7 @@ from lib763.net.UDPServer import UDPServer
 from lib763.fs.save_load import append_str_to_file
 from lib763.fs.fs import ensure_path_exists
 from lib763.multp.multp import start_process
-from multiprocessing import Lock, Condition, Manager
+from multiprocessing import Manager
 from typing import Callable, List
 
 
@@ -27,8 +27,7 @@ class UdpServerSaveFile(UDPServer):
     ) -> None:
         super().__init__(host, port, buffer_size)
         self.save_path = save_path
-        self.func = edit_msg_func
-        self.saver = OrderedSaver(self.save_path, self.func)
+        self.saver = OrderedSaver(self.save_path, edit_msg_func)
         self.FINISH_COMMAND = "\x02FINISH\x03"
         self.SAVE_COMMAND = "\x02SAVE\x03"
         self.loop = True
@@ -59,62 +58,51 @@ class UdpServerSaveFile(UDPServer):
             self.saver.append_data(self.decoded_msg_ls.copy())
             self.decoded_msg_ls.clear()
         self.__exit__(None, None, None)
-        self.saver.exit()
+        self.saver.stop()
         self.loop = False
 
 
 class OrderedSaver:
-    """A helper class for saving data in a certain order.
-
-    Args:
-        save_path (str): The path to the file where the data should be saved.
-        edit_msg_func (Callable): A function to process the data before saving.
-    """
-
-    def __init__(self, save_path: str, edit_msg_func: Callable = None):
-        self.save_path = save_path
-        self.func = edit_msg_func
-        self.dict_lock = Lock()
-        self.data_dict = Manager().dict()
-        self.condition = Condition()
-        self.loop = True
-        self.current_key = 0
-        self.current_save_key = 0
-
-    def append_data(self, save_str_ls: List[str]) -> None:
-        """Appends data to the save list.
+    def __init__(self, save_path: str, edit_msg_func: Callable) -> None:
+        """OrderedSaverのコンストラクタ.
 
         Args:
-            save_str_ls (List[str]): The data to be saved.
+            save_path (str): ファイルパス.
+            edit_msg_func (Callable): メッセージ編集関数.
         """
-        with self.dict_lock:
-            self.data_dict[self.current_key] = save_str_ls
-            self.current_key += 1
-            with self.condition:
-                self.condition.notify()
+        self.save_path = save_path
+        self.func = edit_msg_func
+        self.queue = Manager().Queue()
+
+    def append_data(self, copied_data: List[str]) -> None:
+        """データをキューに追加します.
+
+        Args:
+            copied_data (List[str]): データ.
+        """
+        self.queue.put(copied_data)
+
+    def stop(self):
+        """ファイル書き込みを停止します."""
+        self.queue.put(None)
+        self.process.join()
+
+    def write(self, data_ls: list) -> None:
+        """データをファイルに書き込みます.
+
+        Args:
+            data_ls (list): データ.
+        """
+        save_str = ""
+        for row in [self.func(row) for row in data_ls]:
+            if row is not None:
+                save_str += row + "\n"
+        append_str_to_file(save_str, self.save_path)
 
     def main(self) -> None:
-        """The main loop of the saver, processing and saving data."""
-        while self.loop or self.current_key != self.current_save_key:
-            with self.condition:
-                if len(self.data_dict.keys()) == 0:
-                    self.condition.wait()
-                with self.dict_lock:
-                    save_str_ls = self.data_dict.pop(self.current_save_key)
-
-            if self.func is None:
-                append_str_to_file("\n".join(save_str_ls) + "\n", self.save_path)
-                self.current_save_key += 1
-                continue
-
-            save_str = ""
-            for save_str_line in save_str_ls:
-                edited_str = self.func(save_str_line)
-                if edited_str:
-                    save_str += edited_str + "\n"
-            append_str_to_file(save_str + "\n", self.save_path)
-            self.current_save_key += 1
-
-    def exit(self) -> None:
-        """Exits the saver, stopping any further saving."""
-        self.loop = False
+        """キューから順にデータを取り出し、ファイルに書き込みます."""
+        while True:
+            data_ls = self.queue.get()
+            if data_ls is None:
+                break
+            self.write(data_ls)
