@@ -48,7 +48,7 @@ class Bash:
             pid = proc.pid
 
             if user_input is not None:
-                user_input = "\n".join(user_input).encode("utf-8")
+                user_input = "\n".join(user_input)
                 stdout, stderr = proc.communicate(user_input, timeout=timeout)
             else:
                 stdout, stderr = proc.communicate(timeout=timeout)
