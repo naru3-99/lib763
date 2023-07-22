@@ -19,6 +19,7 @@ class UDPControlClient(UDPClient):
         super().__init__(host, ports, buffer_size)
         self.FINISH_COMMAND = "\x02FINISH\x03"
         self.SAVE_COMMAND = "\x02SAVE\x03"
+        self.loop = True
 
     def main(self, save_interval: float, finish_time: float) -> None:
         """
@@ -30,18 +31,25 @@ class UDPControlClient(UDPClient):
         """
         start_time = time.time()
         last_save_time = start_time
-        while True:
+        while self.loop:
             try:
                 if time.time() - last_save_time > save_interval:
                     last_save_time = time.time()
                     self.send_message(self.SAVE_COMMAND)
 
                 if time.time() - start_time > finish_time:
-                    self.send_message(self.SAVE_COMMAND)
-                    self.send_message(self.FINISH_COMMAND)
-                    self.__exit__(None, None, None)
+                    self.exit_all_client()
                     return
             except KeyboardInterrupt:
                 break
             except Exception as e:
                 print(f"Error in main loop: {str(e)}")
+
+    def exit_all_client(self):
+        """
+        Send the FINISH_COMMAND and exit the client.
+        """
+        self.send_message(self.SAVE_COMMAND)
+        self.send_message(self.FINISH_COMMAND)
+        self.loop = False
+        self.__exit__(None, None, None)
