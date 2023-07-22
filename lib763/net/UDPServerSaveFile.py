@@ -26,9 +26,9 @@ class UdpServerSaveFile(UDPServer):
         edit_msg_func: Callable,
     ) -> None:
         super().__init__(host, port, buffer_size)
-        self.saver = OrderedSaver(self.save_path, self.func)
         self.save_path = save_path
         self.func = edit_msg_func
+        self.saver = OrderedSaver(self.save_path, self.func)
         self.FINISH_COMMAND = "\x02FINISH\x03"
         self.SAVE_COMMAND = "\x02SAVE\x03"
         self.loop = True
