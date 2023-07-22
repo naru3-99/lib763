@@ -192,7 +192,6 @@ def move_file(src_path: str, dst_path: str) -> bool:
 
     try:
         shutil.move(src_path, dst_path)
-        print(f"File moved: '{src_path}' to '{dst_path}'")
         return True
     except Exception as e:
         print(f"Can't move file: '{src_path}' to '{dst_path}'. Reason: {e}")
