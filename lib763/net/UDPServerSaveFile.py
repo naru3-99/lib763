@@ -2,7 +2,8 @@ from lib763.net.UDPServer import UDPServer
 from lib763.fs.save_load import append_str_to_file
 from lib763.fs.fs import ensure_path_exists
 from lib763.multp.multp import start_process
-from multiprocessing import Manager
+from queue import Queue
+import threading
 from typing import Callable, List
 
 
@@ -72,7 +73,7 @@ class OrderedSaver:
         """
         self.save_path = save_path
         self.func = edit_msg_func
-        self.queue = Manager().Queue()
+        self.queue = Queue()
 
     def append_data(self, copied_data: List[str]) -> None:
         """データをキューに追加します.
@@ -86,6 +87,13 @@ class OrderedSaver:
         """ファイル書き込みを停止します."""
         self.queue.put(None)
         self.process.join()
+
+    def start(self) -> None:
+        """
+        ファイル書き込みを開始します.
+        """
+        self.thread = threading.Thread(target=self.main)
+        self.thread.start()
 
     def write(self, data_ls: list) -> None:
         """データをファイルに書き込みます.
