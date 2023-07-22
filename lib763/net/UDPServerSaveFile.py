@@ -37,7 +37,7 @@ class UdpServerSaveFile(UDPServer):
     def main(self) -> None:
         """The main loop of the server, receiving and processing data."""
         ensure_path_exists(self.save_path)
-        start_process(self.saver.main)
+        self.saver.start()
         while self.loop:
             try:
                 decoded_msg = self.receive_udp_packet().decode()
