@@ -48,7 +48,6 @@ class UDPControlClient(UDPClient):
         """
         Send the FINISH_COMMAND and exit the client.
         """
-        self.send_message(self.FINISH_COMMAND)
         self.loop = False
         self.__exit__(None, None, None)
 
