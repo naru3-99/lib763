@@ -73,7 +73,6 @@ class UdpServerSaveFile(UDPServer):
         if len(self.decoded_messages) != 0:
             self.save_received_data()
         self.__exit__(None, None, None)
-        self.saver.stop()
         self.loop = False
 
 
