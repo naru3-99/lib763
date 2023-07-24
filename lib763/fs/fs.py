@@ -1,7 +1,7 @@
 import os
 import shutil
 import zipfile
-from typing import Union
+from typing import Union, List
 from lib763.fs.path import get_all_file_names_in, get_all_dir_names_in
 from lib763.fs.save_load import load_str_from_file, save_str_to_file
 
@@ -198,7 +198,7 @@ def move_file(src_path: str, dst_path: str) -> bool:
         return False
 
 
-def create_zip_archive(directory_path, archive_name):
+def create_zip(directory_path, archive_name):
     """zipによる圧縮を行います。
 
     Args:
@@ -208,12 +208,39 @@ def create_zip_archive(directory_path, archive_name):
     shutil.make_archive(archive_name, "zip", directory_path)
 
 
-def extract_zip_archive(extract_path, archive_name):
-    """zipによる解凍を行います。
+def unzip(archive_path, extract_path=None):
+    """
+    Extract all files from a zip archive.
 
     Args:
-        extract_path (str): 解凍するパス
-        archive_name (str): アーカイブファイルの名前
+        archive_path (str): The path to the zip file.
+        extract_path (str, optional): The path to extract the files to. Defaults to None.
+
+    Returns:
+        None
     """
-    with zipfile.ZipFile(archive_name, "r") as zip_ref:
-        zip_ref.extractall(extract_path)
+    path = os.path.dirname(archive_path) if extract_path is None else extract_path
+    with zipfile.ZipFile(archive_path, "r") as zip_ref:
+        zip_ref.extractall(path)
+
+
+def extract_specific_files(
+    zip_path: str, target_files: List[str], extract_path: str
+) -> None:
+    """
+    Extract specific files from a zip archive.
+
+    Args:
+        zip_path (str): The path to the zip file.
+        target_files (List[str]): The list of files to extract.
+        extract_path (str): The path to extract the files to.
+
+    Returns:
+        None
+    """
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        for target_file in target_files:
+            if target_file in zip_ref.namelist():
+                zip_ref.extract(target_file, extract_path)
+            else:
+                print(f"{target_file} is not found in the zip file.")
