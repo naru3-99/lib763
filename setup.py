@@ -8,6 +8,7 @@ setup(
     license="MIT",
     install_requires=[
         "paramiko",
+        "scp",
         "chardet",
         "opencv-python",  # cv2 is provided by opencv-python
         "keyboard",
