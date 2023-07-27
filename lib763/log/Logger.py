@@ -5,7 +5,8 @@ from multiprocessing import Lock
 
 class Logger:
     """
-    A singleton class that provides logging functionality to the application.
+    Logger.get_instance() should be used to get the singleton instance of the Logger class.
+    This logger is thread-safe.
     """
 
     __instance = None
@@ -50,7 +51,7 @@ class Logger:
                 return
             save_str_to_file(log_str + "\n", self.log_file_path)
 
-    def get_current_log(self):
+    def get_log(self):
         """
         Returns the current log from the log file.
 
