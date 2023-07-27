@@ -1,4 +1,5 @@
 from lib763.fs.save_load import save_str_to_file, load_str_from_file, append_str_to_file
+from lib763.fs.fs import rmrf
 import os
 from multiprocessing import Lock
 
@@ -61,3 +62,20 @@ class Logger:
         with self.log_file_lock:
             current_log = load_str_from_file(self.log_file_path)
         return current_log
+
+    def pop_logs_row(self, row):
+        """完全に一致する行を削除する
+
+        Args:
+            row (str): 削除したい行
+        """
+        self.clear_log()
+        self.add_log("\n".join([x for x in self.get_log().split("\n") if x != row]))
+
+    def clear_log(self):
+        """
+        Clears the log file.
+        """
+        with self.log_file_lock:
+            rmrf(self.log_file_path)
+            save_str_to_file("", self.log_file_path)
