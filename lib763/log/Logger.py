@@ -69,8 +69,9 @@ class Logger:
         Args:
             row (str): 削除したい行
         """
+        current_log = self.get_log()
         self.clear_log()
-        self.add_log("\n".join([x for x in self.get_log().split("\n") if x != row]))
+        self.add_log("\n".join([x for x in current_log.split("\n") if x != row]))
 
     def clear_log(self):
         """
