@@ -56,10 +56,8 @@ class UdpServerSaveFile(UDPServer):
     def process_received_data(self) -> None:
         """Receives and processes data."""
         decoded_msg = self.receive_udp_packet().decode()
-        print(decoded_msg)
         if decoded_msg == FINISH_COMMAND:
             self.stop_loop()
-            print("loop finished")
         elif decoded_msg == SAVE_COMMAND:
             self.save_received_data()
         else:
