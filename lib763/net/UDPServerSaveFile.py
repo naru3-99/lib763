@@ -1,9 +1,11 @@
+from typing import Callable, List
+import time
+
 from lib763.net.UDPServer import UDPServer
 from lib763.fs.save_load import append_str_to_file
 from lib763.fs.fs import ensure_path_exists
 from lib763.multp.multp import start_process
-from typing import Callable, List, Optional
-import time
+from CONST import SAVE_COMMAND, FINISH_COMMAND
 
 
 class UdpServerSaveFile(UDPServer):
@@ -32,8 +34,9 @@ class UdpServerSaveFile(UDPServer):
         self.loop = True
         self.decoded_messages = []
         self.state = SaveState()
-        self.FINISH_COMMAND = "\x02FINISH\x03"
-        self.SAVE_COMMAND = "\x02SAVE\x03"
+
+    def set_loop(self, flag):
+        self.loop = flag
 
     def main(self) -> None:
         """The main loop of the server, receiving and processing data."""
@@ -44,14 +47,15 @@ class UdpServerSaveFile(UDPServer):
             except KeyboardInterrupt:
                 return
             except Exception as e:
-                print(f"Error in main loop: {str(e)}")
+                print(f"Error in server-save-file-main loop: {str(e)}")
+        self.exit()
 
     def process_received_data(self) -> None:
         """Receives and processes data."""
         decoded_msg = self.receive_udp_packet().decode()
-        if decoded_msg == self.FINISH_COMMAND:
-            self.exit_this_server()
-        elif decoded_msg == self.SAVE_COMMAND:
+        if decoded_msg == FINISH_COMMAND:
+            self.set_loop(False)
+        elif decoded_msg == SAVE_COMMAND:
             self.save_received_data()
         else:
             self.decoded_messages.append(decoded_msg)
@@ -70,10 +74,10 @@ class UdpServerSaveFile(UDPServer):
 
     def exit(self) -> None:
         """Exits the server and finishes saving any remaining data."""
+        self.set_loop(False)
         if len(self.decoded_messages) != 0:
             self.save_received_data()
         self.__exit__(None, None, None)
-        self.loop = False
 
 
 class SaveState:
