@@ -5,7 +5,7 @@ from lib763.net.UDPServer import UDPServer
 from lib763.fs.save_load import append_str_to_file
 from lib763.fs.fs import ensure_path_exists
 from lib763.multp.multp import start_process
-from CONST import SAVE_COMMAND, FINISH_COMMAND
+from lib763.net.CONST import SAVE_COMMAND, FINISH_COMMAND
 
 
 class UdpServerSaveFile(UDPServer):
