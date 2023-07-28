@@ -1,7 +1,9 @@
 import os
 import shutil
 import zipfile
+import fnmatch
 from typing import Union, List
+
 from lib763.fs.path import get_all_file_names_in, get_all_dir_names_in
 from lib763.fs.save_load import load_str_from_file, save_str_to_file
 
@@ -240,7 +242,9 @@ def extract_specific_files(
     """
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for target_file in target_files:
-            if target_file in zip_ref.namelist():
-                zip_ref.extract(target_file, extract_path)
+            matched_files = fnmatch.filter(zip_ref.namelist(), target_file)
+            if matched_files:
+                for matched_file in matched_files:
+                    zip_ref.extract(matched_file, extract_path)
             else:
                 print(f"{target_file} is not found in the zip file.")
