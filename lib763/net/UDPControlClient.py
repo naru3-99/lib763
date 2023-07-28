@@ -40,7 +40,7 @@ class UDPControlClient(UDPClient):
                     self.send_message(SAVE_COMMAND)
 
                 if time.time() - start_time > finish_time:
-                    self.set_loop(False)
+                    self.stop_loop()
             except KeyboardInterrupt:
                 break
             except Exception as e:
