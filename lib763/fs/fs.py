@@ -1,7 +1,9 @@
 import os
 import shutil
 import zipfile
+import fnmatch
 from typing import Union, List
+
 from lib763.fs.path import get_all_file_names_in, get_all_dir_names_in
 from lib763.fs.save_load import load_str_from_file, save_str_to_file
 
@@ -225,7 +227,7 @@ def unzip(archive_path, extract_path=None):
 
 
 def extract_specific_files(
-    zip_path: str, target_files: List[str], extract_path: str
+    zip_path: str, target_files: List[str], extract_path: str = None
 ) -> None:
     """
     Extract specific files from a zip archive.
@@ -238,9 +240,12 @@ def extract_specific_files(
     Returns:
         None
     """
+    path = os.path.dirname(zip_path) if extract_path is None else extract_path
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for target_file in target_files:
-            if target_file in zip_ref.namelist():
-                zip_ref.extract(target_file, extract_path)
+            matched_files = fnmatch.filter(zip_ref.namelist(), target_file)
+            if matched_files:
+                for matched_file in matched_files:
+                    zip_ref.extract(matched_file, path)
             else:
                 print(f"{target_file} is not found in the zip file.")
