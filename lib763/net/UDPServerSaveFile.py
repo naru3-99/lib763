@@ -1,11 +1,12 @@
 from typing import Callable, List
+from multiprocessing import Queue
 import time
 
 from lib763.net.UDPServer import UDPServer
 from lib763.fs.save_load import append_str_to_file
 from lib763.fs.fs import ensure_path_exists
 from lib763.multp.multp import start_process
-from lib763.net.CONST import SAVE_COMMAND, FINISH_COMMAND
+from lib763.net.CONST import SAVE_COMMAND, FINISH_COMMAND, STOP_COMMAND
 
 
 class UdpServerSaveFile(UDPServer):
@@ -31,17 +32,19 @@ class UdpServerSaveFile(UDPServer):
         super().__init__(host, port, buffer_size)
         self.save_path = save_path
         self.edit_msg_func = edit_msg_func
-        self.loop = True
+        self.queue = Queue()
         self.decoded_messages = []
         self.state = SaveState()
 
-    def set_loop(self, flag):
-        self.loop = flag
+    def stop_loop(self):
+        self.queue.put(STOP_COMMAND)
 
     def main(self) -> None:
         """The main loop of the server, receiving and processing data."""
         ensure_path_exists(self.save_path)
-        while self.loop:
+        while True:
+            if not self.queue.empty() and self.queue.get() == STOP_COMMAND:
+                break
             try:
                 self.process_received_data()
             except KeyboardInterrupt:
@@ -53,8 +56,10 @@ class UdpServerSaveFile(UDPServer):
     def process_received_data(self) -> None:
         """Receives and processes data."""
         decoded_msg = self.receive_udp_packet().decode()
+        print(decoded_msg)
         if decoded_msg == FINISH_COMMAND:
-            self.set_loop(False)
+            self.stop_loop()
+            print("loop finished")
         elif decoded_msg == SAVE_COMMAND:
             self.save_received_data()
         else:

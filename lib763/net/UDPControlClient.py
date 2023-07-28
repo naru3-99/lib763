@@ -1,8 +1,9 @@
 import time
 from typing import List
+from multiprocessing import Queue
 
 from lib763.net.UDPClient import UDPClient
-from lib763.net.CONST import SAVE_COMMAND, FINISH_COMMAND
+from lib763.net.CONST import SAVE_COMMAND, FINISH_COMMAND, STOP_COMMAND
 
 
 class UDPControlClient(UDPClient):
@@ -18,7 +19,7 @@ class UDPControlClient(UDPClient):
             buffer_size: The size of the send buffer.
         """
         super().__init__(host, ports, buffer_size)
-        self.loop = True
+        self.queue = Queue()
 
     def main(self, save_interval: float, finish_time: float) -> None:
         """
@@ -30,7 +31,9 @@ class UDPControlClient(UDPClient):
         """
         start_time = time.time()
         last_save_time = start_time
-        while self.loop:
+        while True:
+            if not self.queue.empty() and self.queue.get() == STOP_COMMAND:
+                break
             try:
                 if time.time() - last_save_time > save_interval:
                     last_save_time = time.time()
@@ -44,13 +47,13 @@ class UDPControlClient(UDPClient):
                 print(f"Error in ctrl-client-main loop: {str(e)}")
         self.exit()
 
-    def set_loop(self, flag: bool) -> None:
-        self.loop = flag
+    def stop_loop(self) -> None:
+        self.queue.put(STOP_COMMAND)
 
     def exit(self) -> None:
         """
         Send the FINISH_COMMAND and exit the client.
         """
-        self.set_loop(False)
+        self.stop_loop(False)
         self.send_message(FINISH_COMMAND)
         self.__exit__(None, None, None)
