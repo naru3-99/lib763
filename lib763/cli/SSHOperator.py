@@ -31,9 +31,9 @@ class SSHOperator:
         self._port = port
         self._client = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self._init_ssh()
+        self.connect_ssh()
 
-    def _init_ssh(self):
+    def connect_ssh(self):
         """
         SSH接続を初期化するプライベートメソッド。
 
@@ -68,7 +68,7 @@ class SSHOperator:
             raise SSHConnectionError("SSH接続が有効ではありません。")
         stdin, stdout, stderr = self._client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
-        return stdout.read().decode("utf-8")
+        return exit_status, stdout.read().decode("utf-8"), stderr.read().decode("utf-8")
 
     def execute_sudo(self, command: str) -> str:
         """
@@ -87,9 +87,7 @@ class SSHOperator:
             raise SSHConnectionError("SSH接続が有効ではありません。")
 
         sudo_command = f"echo {self._password} | sudo -S {command}"
-        stdin, stdout, stderr = self._client.exec_command(sudo_command)
-        exit_status = stdout.channel.recv_exit_status()
-        return stdout.read().decode("utf-8")
+        return self.execute(sudo_command)
 
     def send_file(self, local_path: str, remote_path: str):
         """
