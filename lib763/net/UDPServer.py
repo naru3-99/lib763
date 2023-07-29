@@ -39,10 +39,8 @@ class UDPServer:
             rcv_data, _ = self._sock.recvfrom(self._buffer_size)
             return rcv_data
         except socket.timeout:
-            print("Timeout occurred while receiving packet")
             return None
         except Exception as e:
-            print(f"Error while receiving packet: {str(e)}")
             return None
 
     def __enter__(self) -> "UDPServer":
