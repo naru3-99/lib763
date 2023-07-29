@@ -1,26 +1,15 @@
-from typing import Callable, List
 from multiprocessing import Queue
-import time
+from typing import Callable, List
+
+from lib763.fs.fs import ensure_path_exists
+from lib763.fs.save_load import append_str_to_file
+from lib763.multp.multp import start_process
 
 from lib763.net.UDPServer import UDPServer
-from lib763.fs.save_load import append_str_to_file
-from lib763.fs.fs import ensure_path_exists
-from lib763.multp.multp import start_process
 from lib763.net.CONST import SAVE_COMMAND, FINISH_COMMAND, STOP_COMMAND
 
 
 class UdpServerSaveFile(UDPServer):
-    """
-    A server for handling UDP packets and saving them to a file.
-
-    Args:
-        host: The host of the server.
-        port: The port of the server.
-        buffer_size: The maximum amount of data to be received at once.
-        save_path: The path to the file where the data should be saved.
-        edit_msg_func: A function to process the received data before saving.
-    """
-
     def __init__(
         self,
         host: str,
@@ -29,113 +18,89 @@ class UdpServerSaveFile(UDPServer):
         save_path: str,
         edit_msg_func: Callable,
     ) -> None:
+        """
+        A UDP server that saves incoming messages to a file.
+
+        Args:
+        - host (str): The host address to bind the server to.
+        - port (int): The port number to bind the server to.
+        - buffer_size (int): The maximum size of the incoming message buffer.
+        - save_path (str): The path to the file where the messages will be saved.
+        - edit_msg_func (Callable): A function to edit the incoming messages before saving them.
+        """
         super().__init__(host, port, buffer_size)
         self.save_path = save_path
         self.edit_msg_func = edit_msg_func
-        self.queue = Queue()
+        self.loop_queue = Queue()
+        self.save_queue = Queue()
         self.decoded_messages = []
-        self.state = SaveState()
 
-    def stop_loop(self):
-        self.queue.put(STOP_COMMAND)
+    def stop_loop(self) -> None:
+        """
+        Stops the main loop of the server.
+        """
+        self.loop_queue.put(STOP_COMMAND)
 
     def main(self) -> None:
-        """The main loop of the server, receiving and processing data."""
+        """
+        The main loop of the server.
+        """
         ensure_path_exists(self.save_path)
+        start_process(save_proc, self.save_queue, self.save_path)
         while True:
-            if not self.queue.empty() and self.queue.get() == STOP_COMMAND:
+            if not self.loop_queue.empty() and self.loop_queue.get() == STOP_COMMAND:
                 break
             try:
-                self.process_received_data()
+                self.receive_and_deal()
             except KeyboardInterrupt:
                 return
             except Exception as e:
                 print(f"Error in server-save-file-main loop: {str(e)}")
         self._exit()
 
-    def process_received_data(self) -> None:
-        """Receives and processes data."""
+    def receive_and_deal(self) -> None:
+        """
+        Receives an incoming message and deals with it accordingly.
+        """
         decoded_msg = self.receive_udp_packet().decode()
         if decoded_msg == FINISH_COMMAND:
             self.stop_loop()
+            self.save_queue.put(STOP_COMMAND)
         elif decoded_msg == SAVE_COMMAND:
-            self.save_received_data()
+            self.save_msgs()
         else:
-            self.decoded_messages.append(decoded_msg)
+            edited_msg = self.edit_msg_func(decoded_msg)
+            self.decoded_messages.append(edited_msg)
 
-    def save_received_data(self) -> None:
-        """Saves received data to a file."""
+    def save_msgs(self) -> None:
+        """
+        Saves the incoming messages to the file.
+        """
         if len(self.decoded_messages) != 0:
-            start_process(
-                save_thread,
-                self.decoded_messages.copy(),
-                self.state,
-                self.save_path,
-                self.edit_msg_func,
-            )
+            self.save_queue.put(self.decoded_messages.copy())
             self.decoded_messages.clear()
 
     def _exit(self) -> None:
-        """Exits the server and finishes saving any remaining data."""
+        """
+        Exits the server.
+        """
         if len(self.decoded_messages) != 0:
-            self.save_received_data()
+            self.save_msgs()
         self.__exit__(None, None, None)
 
 
-class SaveState:
-    """Tracks the state of saving operation."""
+def save_proc(queue: Queue, save_path: str) -> None:
+    """
+    A process that saves the incoming messages to the file.
 
-    def __init__(self):
-        self.current_state = False
-        self.current_ticket = 1
-        self.issued_ticket = 0
-
-    def get_state(self) -> bool:
-        """Gets the current state."""
-        return self.current_state
-
-    def get_current_ticket(self) -> int:
-        """Gets the current ticket."""
-        return self.current_ticket
-
-    def set_state(self, state_bool: bool) -> None:
-        """Sets the current state."""
-        self.current_state = state_bool
-
-    def forward_current_ticket(self) -> None:
-        """Advances the current ticket."""
-        self.current_ticket += 1
-
-    def issue_ticket(self) -> int:
-        """Issues a new ticket and returns it."""
-        self.issued_ticket += 1
-        return self.issued_ticket
-
-
-def save_thread(
-    decoded_messages: List[str],
-    save_state: SaveState,
-    save_path: str,
-    edit_msg_func: Callable,
-) -> None:
-    """A thread to save received messages."""
-    ticket = save_state.issue_ticket()
-    while not (
-        (not save_state.get_state()) and (save_state.get_current_ticket() == ticket)
-    ):
-        time.sleep(0.2)
-    save_state.set_state(True)
-    save_data(decoded_messages, save_path, edit_msg_func)
-    save_state.set_state(False)
-    save_state.forward_current_ticket()
-
-
-def save_data(
-    decoded_messages: List[str], save_path: str, edit_msg_func: Callable
-) -> None:
-    """Saves the received data to a file."""
-    save_str = ""
-    for row in [edit_msg_func(row) for row in decoded_messages]:
-        if row is not None:
-            save_str += row + "\n"
-    append_str_to_file(save_str, save_path)
+    Args:
+    - queue (Queue): The queue containing the incoming messages.
+    - save_path (str): The path to the file where the messages will be saved.
+    """
+    while True:
+        item = queue.get()
+        if item == STOP_COMMAND:
+            break
+        append_str_to_file("\n".join(item) + "\n", save_path)
+    while not queue.empty():
+        append_str_to_file("\n".join(queue.get()) + "\n", save_path)
