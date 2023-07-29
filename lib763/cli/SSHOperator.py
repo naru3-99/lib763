@@ -10,35 +10,32 @@ class SSHOperator:
         password: str,
         key_path: str = None,
         port: int = 22,
-    ):
+    ) -> None:
         """
-        SSHOperatorクラスの初期化メソッド。
+        SSHOperatorクラスのコンストラクター。
 
         Args:
-            username (str): SSH接続のユーザー名。
-            hostname (str): SSH接続のホスト名。
-            password (str): SSH接続のパスワード。
-            key_path (str, optional): SSHの秘密鍵のファイルパス。デフォルトはNone。
-            port (int, optional): SSH接続のポート番号。デフォルトは22。
-
-        Raises:
-            SSHConnectionError: SSH接続が失敗した場合に発生。
+            username (str): SSH接続に使用するユーザー名。
+            hostname (str): SSH接続に使用するホスト名。
+            password (str): SSH接続に使用するパスワード。
+            key_path (str, optional): SSH接続に使用する秘密鍵のパス。デフォルトはNone。
+            port (int, optional): SSH接続に使用するポート番号。デフォルトは22。
         """
-        self._username = username
-        self._hostname = hostname
-        self._password = password
-        self._key_path = key_path
-        self._port = port
-        self._client = paramiko.SSHClient()
+        self._username: str = username
+        self._hostname: str = hostname
+        self._password: str = password
+        self._key_path: str = key_path
+        self._port: int = port
+        self._client: paramiko.SSHClient = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.connect_ssh()
 
-    def connect_ssh(self):
+    def connect_ssh(self) -> bool:
         """
-        SSH接続を初期化するプライベートメソッド。
+        SSH接続を確立するメソッド。
 
-        Raises:
-            SSHConnectionError: SSH接続が失敗した場合に発生。
+        Returns:
+            bool: 成功するとTrue、失敗するとFalse
         """
         try:
             self._client.connect(
@@ -48,77 +45,72 @@ class SSHOperator:
                 key_filename=self._key_path,
                 port=self._port,
             )
-        except Exception as e:
-            raise SSHConnectionError("SSH connection failed.") from e
+            return True
+        except:
+            return False
 
-    def execute(self, command: str) -> str:
+    def execute(self, command: str) -> tuple[int, str, str]:
         """
-        SSH接続を通じてリモートコマンドを実行する。
+        コマンドを実行するメソッド。
 
         Args:
             command (str): 実行するコマンド。
 
         Returns:
-            str: コマンドの実行結果。
-
-        Raises:
-            SSHConnectionError: SSH接続が有効でない場合に発生。
+            tuple[int, str, str]: コマンドの実行結果。
         """
         if not self.get_ssh_state():
             raise SSHConnectionError("SSH接続が有効ではありません。")
-        stdin, stdout, stderr = self._client.exec_command(command)
+        _, stdout, stderr = self._client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
         return exit_status, stdout.read().decode("utf-8"), stderr.read().decode("utf-8")
 
-    def execute_sudo(self, command: str) -> str:
+    def execute_sudo(self, command: str) -> tuple[int, str, str]:
         """
-        SSH接続を通じてsudo権限でリモートコマンドを実行する。
+        sudoコマンドを実行するメソッド。
 
         Args:
-            command (str): 実行するコマンド。
+            command (str): 実行するsudoコマンド。
 
         Returns:
-            str: コマンドの実行結果。
-
-        Raises:
-            SSHConnectionError: SSH接続が有効でない場合に発生。
+            tuple[int, str, str]: コマンドの実行結果。
         """
-        if not self.get_ssh_state():
-            raise SSHConnectionError("SSH接続が有効ではありません。")
+        return self.execute(f"echo {self._password} | sudo -S {command}")
 
-        sudo_command = f"echo {self._password} | sudo -S {command}"
-        return self.execute(sudo_command)
-
-    def send_file(self, local_path: str, remote_path: str):
+    def send_file(self, local_path: str, remote_path: str) -> bool:
         """
-        ファイルをリモートシステムに送信する。
+        ファイルをリモートホストに送信するメソッド。
 
         Args:
-            local_path (str): ローカルのファイルパス。
-            remote_path (str): リモートのファイルパス。
+            local_path (str): 送信するファイルのローカルパス。
+            remote_path (str): 送信するファイルのリモートパス。
 
-        Raises:
-            SSHConnectionError: SSH接続が有効でない場合に発生。
+        Returns:
+            bool: ファイルの送信が成功した場合はTrue、失敗した場合はFalse。
         """
         if not self.get_ssh_state():
             raise SSHConnectionError("SSH接続が有効ではありません。")
-        with SCPClient(self._client.get_transport()) as scp:
-            scp.put(local_path, remote_path)
+        try:
+            with SCPClient(self._client.get_transport()) as scp:
+                scp.put(local_path, remote_path)
+            return True
+        except:
+            return False
 
     def get_ssh_state(self) -> bool:
         """
-        現在のSSH接続の状態を確認します。
+        SSH接続の状態を取得するメソッド。
 
         Returns:
-            bool: SSH接続が有効な場合はTrue、そうでない場合はFalse。
+            bool: SSH接続が有効な場合はTrue、無効な場合はFalse。
         """
         if self._client.get_transport() is None:
             return False
         return self._client.get_transport().is_active()
 
-    def exit(self):
+    def exit(self) -> None:
         """
-        SSH接続を閉じる。
+        SSH接続を終了するメソッド。
         """
         self._client.close()
 
