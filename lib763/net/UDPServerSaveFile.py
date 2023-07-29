@@ -1,6 +1,5 @@
 from multiprocessing import Queue
-from typing import Callable, List
-import time
+from typing import Callable
 import sys
 
 from lib763.fs.fs import ensure_path_exists
@@ -33,15 +32,15 @@ class UdpServerSaveFile(UDPServer):
         super().__init__(host, port, buffer_size)
         self.save_path = save_path
         self.edit_msg_func = edit_msg_func
-        self.loop_queue = Queue()
+        self.loop = Queue()
         self.save_queue = Queue()
-        self.decoded_messages = []
+        self.decoded_msg_buf = []
 
     def stop_loop(self) -> None:
         """
         Stops the main loop of the server.
         """
-        self.loop_queue.put(STOP_COMMAND)
+        self.loop.put(STOP_COMMAND)
 
     def main(self) -> None:
         """
@@ -49,7 +48,7 @@ class UdpServerSaveFile(UDPServer):
         """
         ensure_path_exists(self.save_path)
         start_process(save_proc, self.save_queue, self.save_path)
-        while self.loop_queue.empty():
+        while self.loop.empty():
             try:
                 self.receive_and_deal()
             except KeyboardInterrupt:
@@ -69,21 +68,21 @@ class UdpServerSaveFile(UDPServer):
             self.save_msgs()
         else:
             edited_msg = self.edit_msg_func(decoded_msg)
-            self.decoded_messages.append(edited_msg)
+            self.decoded_msg_buf.append(edited_msg)
 
     def save_msgs(self) -> None:
         """
         Saves the incoming messages to the file.
         """
-        if len(self.decoded_messages) != 0:
-            self.save_queue.put(self.decoded_messages.copy())
-            self.decoded_messages.clear()
+        if len(self.decoded_msg_buf) != 0:
+            self.save_queue.put(self.decoded_msg_buf.copy())
+            self.decoded_msg_buf.clear()
 
     def _exit(self) -> None:
         """
         Exits the server.
         """
-        if len(self.decoded_messages) != 0:
+        if len(self.decoded_msg_buf) != 0:
             self.save_msgs()
         self.save_queue.put(STOP_COMMAND)
         self.__exit__(None, None, None)

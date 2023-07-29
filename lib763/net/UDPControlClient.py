@@ -20,7 +20,7 @@ class UDPControlClient(UDPClient):
             buffer_size: The size of the send buffer.
         """
         super().__init__(host, ports, buffer_size)
-        self.queue = Queue()
+        self.loop = Queue()
 
     def main(self, save_interval: float, finish_time: float) -> None:
         """
@@ -32,7 +32,7 @@ class UDPControlClient(UDPClient):
         """
         start_time = time.time()
         last_save_time = start_time
-        while self.queue.empty():
+        while self.loop.empty():
             try:
                 if time.time() - last_save_time > save_interval:
                     last_save_time = time.time()
@@ -47,7 +47,7 @@ class UDPControlClient(UDPClient):
         self._exit()
 
     def stop_loop(self) -> None:
-        self.queue.put(STOP_COMMAND)
+        self.loop.put(STOP_COMMAND)
 
     def _exit(self) -> None:
         """
