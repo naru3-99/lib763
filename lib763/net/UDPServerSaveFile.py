@@ -29,7 +29,7 @@ class UdpServerSaveFile(UDPServer):
     def main(self) -> None:
         while self.loop.empty():
             try:
-                msg = self.receive_udp_packet()
+                msg = self.receive_udp_packet(1)
                 if msg is None:
                     continue
                 self.msgs_buffer.append(msg)
