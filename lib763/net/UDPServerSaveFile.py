@@ -100,7 +100,10 @@ def save_proc(queue: Queue, save_path: str) -> None:
     while True:
         item = queue.get()
         if item == STOP_COMMAND:
-            break
+            while not queue.empty():
+                try:
+                    append_str_to_file("\n".join(queue.get_nowait()) + "\n", save_path)
+                except:
+                    return
+            return
         append_str_to_file("\n".join(item) + "\n", save_path)
-    while not queue.empty():
-        append_str_to_file("\n".join(queue.get()) + "\n", save_path)
