@@ -28,7 +28,6 @@ class SSHOperator:
         self._port: int = port
         self._client: paramiko.SSHClient = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.connect_ssh()
 
     def connect_ssh(self) -> bool:
         """

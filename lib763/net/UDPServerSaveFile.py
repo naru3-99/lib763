@@ -1,13 +1,12 @@
 from multiprocessing import Queue
 from typing import Callable
-import sys
 
 from lib763.fs.fs import ensure_path_exists
 from lib763.fs.save_load import append_str_to_file
 from lib763.multp.multp import start_process
-
 from lib763.net.UDPServer import UDPServer
-from lib763.net.CONST import SAVE_COMMAND, FINISH_COMMAND, STOP_COMMAND
+
+STOP_COMMAND = "\x02STOP\x03"
 
 
 class UdpServerSaveFile(UDPServer):
@@ -15,90 +14,52 @@ class UdpServerSaveFile(UDPServer):
         self,
         host: str,
         port: int,
-        buffer_size: int,
+        udp_buffer_size: int,
         save_path: str,
         edit_msg_func: Callable,
+        msg_buf_size: int,
     ) -> None:
-        """
-        A UDP server that saves incoming messages to a file.
-
-        Args:
-        - host (str): The host address to bind the server to.
-        - port (int): The port number to bind the server to.
-        - buffer_size (int): The maximum size of the incoming message buffer.
-        - save_path (str): The path to the file where the messages will be saved.
-        - edit_msg_func (Callable): A function to edit the incoming messages before saving them.
-        """
-        super().__init__(host, port, buffer_size)
-        self.save_path = save_path
-        self.edit_msg_func = edit_msg_func
+        super().__init__(host, port, udp_buffer_size)
         self.loop = Queue()
         self.save_queue = Queue()
-        self.decoded_msg_buf = []
-
-    def stop_loop(self) -> None:
-        """
-        Stops the main loop of the server.
-        """
-        self.loop.put(STOP_COMMAND)
+        self.msgs_buffer = []
+        self.msg_buf_size = msg_buf_size
+        start_process(save_proc, self.save_queue, save_path, edit_msg_func)
 
     def main(self) -> None:
-        """
-        The main loop of the server.
-        """
-        ensure_path_exists(self.save_path)
-        start_process(save_proc, self.save_queue, self.save_path)
         while self.loop.empty():
             try:
-                self.receive_and_deal()
+                msg = self.receive_udp_packet()
+                if msg is None:
+                    continue
+                self.msgs_buffer.append(msg)
+                if len(self.msgs_buffer) > self.msg_buf_size:
+                    self.save_msgs()
             except KeyboardInterrupt:
                 return
             except Exception as e:
                 print(f"Error in server-save-file-main loop: {str(e)}")
         self._exit()
 
-    def receive_and_deal(self) -> None:
-        """
-        Receives an incoming message and deals with it accordingly.
-        """
-        decoded_msg = self.receive_udp_packet().decode()
-        if decoded_msg == FINISH_COMMAND:
-            self.stop_loop()
-        elif decoded_msg == SAVE_COMMAND:
-            self.save_msgs()
-        else:
-            edited_msg = self.edit_msg_func(decoded_msg)
-            self.decoded_msg_buf.append(edited_msg)
-
     def save_msgs(self) -> None:
-        """
-        Saves the incoming messages to the file.
-        """
-        if len(self.decoded_msg_buf) != 0:
-            self.save_queue.put(self.decoded_msg_buf.copy())
-            self.decoded_msg_buf.clear()
+        if len(self.msgs_buffer) != 0:
+            self.save_queue.put(self.msgs_buffer.copy())
+            self.msgs_buffer.clear()
+
+    def stop_loop(self) -> None:
+        self.loop.put(STOP_COMMAND)
 
     def _exit(self) -> None:
-        """
-        Exits the server.
-        """
-        if len(self.decoded_msg_buf) != 0:
-            self.save_msgs()
+        self.save_msgs()
         self.save_queue.put(STOP_COMMAND)
         self.__exit__(None, None, None)
-        sys.exit()
 
 
-def save_proc(queue: Queue, save_path: str) -> None:
-    """
-    A process that saves the incoming messages to the file.
-
-    Args:
-    - queue (Queue): The queue containing the incoming messages.
-    - save_path (str): The path to the file where the messages will be saved.
-    """
+def save_proc(queue: Queue, save_path: str, edit_msg_func: callable) -> None:
+    ensure_path_exists(save_path)
     while True:
         item = queue.get()
         if item == STOP_COMMAND:
-            sys.exit()
-        append_str_to_file("\n".join(item) + "\n", save_path)
+            return
+        save_str = "\n".join([edit_msg_func(msg.decode()) for msg in item]) + "\n"
+        append_str_to_file(save_str, save_path)

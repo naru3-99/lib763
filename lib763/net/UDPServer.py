@@ -25,15 +25,22 @@ class UDPServer:
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._sock.bind((self._host, self._port))
 
-    def receive_udp_packet(self) -> Optional[bytes]:
+    def receive_udp_packet(self, timeout: float = None) -> Optional[bytes]:
         """Receive a UDP packet from the socket.
+
+        Args:
+            timeout (float, optional): The timeout in seconds. Defaults to None.
 
         Returns:
             Optional[bytes]: The received data, None if an error occurred.
         """
         try:
+            self._sock.settimeout(timeout)
             rcv_data, _ = self._sock.recvfrom(self._buffer_size)
             return rcv_data
+        except socket.timeout:
+            print("Timeout occurred while receiving packet")
+            return None
         except Exception as e:
             print(f"Error while receiving packet: {str(e)}")
             return None
