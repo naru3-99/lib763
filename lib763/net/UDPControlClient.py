@@ -45,15 +45,14 @@ class UDPControlClient(UDPClient):
                 break
             except Exception as e:
                 print(f"Error in ctrl-client-main loop: {str(e)}")
-        self.exit()
+        self._exit()
 
     def stop_loop(self) -> None:
         self.queue.put(STOP_COMMAND)
 
-    def exit(self) -> None:
+    def _exit(self) -> None:
         """
         Send the FINISH_COMMAND and exit the client.
         """
-        self.stop_loop()
         self.send_message(FINISH_COMMAND)
         self.__exit__(None, None, None)

@@ -51,7 +51,7 @@ class UdpServerSaveFile(UDPServer):
                 return
             except Exception as e:
                 print(f"Error in server-save-file-main loop: {str(e)}")
-        self.exit()
+        self._exit()
 
     def process_received_data(self) -> None:
         """Receives and processes data."""
@@ -75,9 +75,8 @@ class UdpServerSaveFile(UDPServer):
             )
             self.decoded_messages.clear()
 
-    def exit(self) -> None:
+    def _exit(self) -> None:
         """Exits the server and finishes saving any remaining data."""
-        self.stop_loop()
         if len(self.decoded_messages) != 0:
             self.save_received_data()
         self.__exit__(None, None, None)
