@@ -1,5 +1,7 @@
 from multiprocessing import Queue
 from typing import Callable, List
+import time
+import sys
 
 from lib763.fs.fs import ensure_path_exists
 from lib763.fs.save_load import append_str_to_file
@@ -47,9 +49,7 @@ class UdpServerSaveFile(UDPServer):
         """
         ensure_path_exists(self.save_path)
         start_process(save_proc, self.save_queue, self.save_path)
-        while True:
-            if not self.loop_queue.empty() and self.loop_queue.get() == STOP_COMMAND:
-                break
+        while self.loop_queue.empty():
             try:
                 self.receive_and_deal()
             except KeyboardInterrupt:
@@ -65,7 +65,6 @@ class UdpServerSaveFile(UDPServer):
         decoded_msg = self.receive_udp_packet().decode()
         if decoded_msg == FINISH_COMMAND:
             self.stop_loop()
-            self.save_queue.put(STOP_COMMAND)
         elif decoded_msg == SAVE_COMMAND:
             self.save_msgs()
         else:
@@ -86,7 +85,9 @@ class UdpServerSaveFile(UDPServer):
         """
         if len(self.decoded_messages) != 0:
             self.save_msgs()
+        self.save_queue.put(STOP_COMMAND)
         self.__exit__(None, None, None)
+        sys.exit()
 
 
 def save_proc(queue: Queue, save_path: str) -> None:
@@ -100,10 +101,5 @@ def save_proc(queue: Queue, save_path: str) -> None:
     while True:
         item = queue.get()
         if item == STOP_COMMAND:
-            while not queue.empty():
-                try:
-                    append_str_to_file("\n".join(queue.get_nowait()) + "\n", save_path)
-                except:
-                    return
-            return
+            sys.exit()
         append_str_to_file("\n".join(item) + "\n", save_path)

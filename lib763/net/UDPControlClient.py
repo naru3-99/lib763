@@ -1,4 +1,5 @@
 import time
+import sys
 from typing import List
 from multiprocessing import Queue
 
@@ -31,9 +32,7 @@ class UDPControlClient(UDPClient):
         """
         start_time = time.time()
         last_save_time = start_time
-        while True:
-            if not self.queue.empty() and self.queue.get() == STOP_COMMAND:
-                break
+        while self.queue.empty():
             try:
                 if time.time() - last_save_time > save_interval:
                     last_save_time = time.time()
@@ -56,3 +55,4 @@ class UDPControlClient(UDPClient):
         """
         self.send_message(FINISH_COMMAND)
         self.__exit__(None, None, None)
+        sys.exit()
