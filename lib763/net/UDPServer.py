@@ -32,7 +32,7 @@ class UDPServer:
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
-                self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 self._sock.bind((self._host, self._port))
                 return True
             except OSError as e:
