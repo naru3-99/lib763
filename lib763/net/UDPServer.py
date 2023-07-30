@@ -20,6 +20,7 @@ class UDPServer:
             port (int): The port of the server.
             buffer_size (int): The maximum amount of data to be received at once.
         """
+        self._sock = None
         self._host = host
         self._port = port
         self._buffer_size = buffer_size
@@ -31,8 +32,8 @@ class UDPServer:
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.bind((self._host, self._port))
+                self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self._sock.bind((self._host, self._port))
                 return True
             except OSError as e:
                 if e.winerror == 10048:
