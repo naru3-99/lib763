@@ -25,7 +25,8 @@ def stop_process(process: Process) -> None:
     Parameters:
     process (Process): 終了させるプロセスオブジェクト
     """
-    process.terminate()
+    if process.is_alive():
+        process.terminate()
 
 
 def parallel_process(func: Callable[[Any], Any], data_list: List[Any]) -> List[Any]:

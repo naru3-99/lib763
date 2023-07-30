@@ -42,7 +42,7 @@ class SSHOperator:
                 username=self._username,
                 password=self._password,
                 key_filename=self._key_path,
-                port=self._port,
+                port=self._port
             )
             return True
         except:

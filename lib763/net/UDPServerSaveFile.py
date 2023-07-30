@@ -4,7 +4,7 @@ from typing import Callable
 from lib763.fs.fs import ensure_path_exists
 from lib763.fs.save_load import append_str_to_file
 from lib763.multp.multp import start_process
-from lib763.net.UDPServer import UDPServer
+from lib763.net.UDPServer import UDPServer, socket
 
 STOP_COMMAND = "\x02STOP\x03"
 
@@ -25,6 +25,9 @@ class UdpServerSaveFile(UDPServer):
         self.msgs_buffer = []
         self.msg_buf_size = msg_buf_size
         start_process(save_proc, self.save_queue, save_path, edit_msg_func)
+
+    def set_so_reuse(self):
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     def main(self) -> None:
         while self.loop.empty():
