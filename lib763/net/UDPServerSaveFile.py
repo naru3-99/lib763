@@ -1,10 +1,11 @@
 from multiprocessing import Queue
 from typing import Callable
+import time
 
 from lib763.fs.fs import ensure_path_exists
 from lib763.fs.save_load import append_str_to_file
 from lib763.multp.multp import start_process
-from lib763.net.UDPServer import UDPServer, socket
+from lib763.net.UDPServer import UDPServer
 
 STOP_COMMAND = "\x02STOP\x03"
 
@@ -15,23 +16,45 @@ class UdpServerSaveFile(UDPServer):
         host: str,
         port: int,
         udp_buffer_size: int,
-        save_path: str,
         edit_msg_func: Callable,
         msg_buf_size: int,
     ) -> None:
         super().__init__(host, port, udp_buffer_size)
         self.loop = Queue()
-        self.save_queue = Queue()
+        self.save_msgs_q = None
+        self.save_path_q = Queue()
         self.msgs_buffer = []
+        self.edit_func = edit_msg_func
         self.msg_buf_size = msg_buf_size
-        start_process(save_proc, self.save_queue, save_path, edit_msg_func)
 
-    def set_so_reuse(self):
-        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    def init_save_file(self, path):
+        self.save_path_q.put(path)
+
+    def start_save_proc(self):
+        # when added new path to save_path_q
+        # finish current msgs queue
+        if not self.save_msgs_q is None:
+            self.save_msgs()
+            self.save_msgs_q.put(STOP_COMMAND)
+        # create new queue and process
+        path = self.save_path_q.get()
+        ensure_path_exists(path)
+        self.save_msgs_q = Queue()
+        start_process(save_proc, self.save_msgs_q, path, self.edit_func)
 
     def main(self) -> None:
+        # pathがセットされるまで待つ
+        while self.save_path_q.empty():
+            time.sleep(1)
+        self.start_save_proc()
+
+        # main loop
         while self.loop.empty():
             try:
+                # pathが更新されているか確認する
+                if not self.save_path_q.empty():
+                    self.start_save_proc()
+                # パケットを取得する
                 msg = self.receive_udp_packet(1)
                 if msg is None:
                     continue
@@ -46,7 +69,7 @@ class UdpServerSaveFile(UDPServer):
 
     def save_msgs(self) -> None:
         if len(self.msgs_buffer) != 0:
-            self.save_queue.put(self.msgs_buffer.copy())
+            self.save_msgs_q.put(self.msgs_buffer.copy())
             self.msgs_buffer.clear()
 
     def stop_loop(self) -> None:
@@ -54,7 +77,7 @@ class UdpServerSaveFile(UDPServer):
 
     def _exit(self) -> None:
         self.save_msgs()
-        self.save_queue.put(STOP_COMMAND)
+        self.save_msgs_q.put(STOP_COMMAND)
         self.__exit__(None, None, None)
 
 
