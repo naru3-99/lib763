@@ -1,4 +1,5 @@
 import socket
+import time
 from typing import Optional, Any, Tuple, Type
 
 
@@ -11,7 +12,7 @@ class UDPServer:
         buffer_size (int): The maximum amount of data to be received at once.
     """
 
-    def __init__(self, host: str, port: int, buffer_size: int) -> None:
+    def __init__(self, host: str, port: int, buffer_size: int, timeout=None) -> None:
         """Initialize the server with host, port and buffer size.
 
         Args:
@@ -22,8 +23,24 @@ class UDPServer:
         self._host = host
         self._port = port
         self._buffer_size = buffer_size
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._sock.bind((self._host, self._port))
+        to = timeout if timeout is not None else 60
+        if not self.init_server(to):
+            raise TimeoutError("UDP server timeout to bind")
+
+    def init_server(self, timeout=60):
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.bind((self._host, self._port))
+                return True
+            except OSError as e:
+                if e.winerror == 10048:
+                    time.sleep(1)
+                    continue
+                else:
+                    raise e
+        return False
 
     def receive_udp_packet(self, timeout: float = None) -> Optional[bytes]:
         """Receive a UDP packet from the socket.
