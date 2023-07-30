@@ -43,6 +43,7 @@ class SSHOperator:
                 password=self._password,
                 key_filename=self._key_path,
                 port=self._port,
+                banner_timeout=10
             )
             return True
         except:
