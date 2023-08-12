@@ -1,5 +1,4 @@
-from lib763.fs.save_load import save_str_to_file, load_str_from_file, append_str_to_file
-from lib763.fs.fs import rmrf
+from lib763.fs import save_str_to_file, load_str_from_file, append_str_to_file, rmrf
 import os
 from multiprocessing import Lock
 

@@ -2,9 +2,8 @@ from multiprocessing import Queue
 from typing import Callable
 import time
 
-from lib763.fs.fs import ensure_path_exists
-from lib763.fs.save_load import append_str_to_file
-from lib763.multp.multp import start_process
+from lib763.fs import ensure_path_exists, append_str_to_file
+from lib763.multp import start_process
 from lib763.net.UDPServer import UDPServer
 
 STOP_COMMAND = "\x02STOP\x03"

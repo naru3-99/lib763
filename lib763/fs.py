@@ -2,10 +2,283 @@ import os
 import shutil
 import zipfile
 import fnmatch
-from typing import Union, List
+import chardet
+import glob
+import pickle
 
-from lib763.fs.path import get_all_file_names_in, get_all_dir_names_in
-from lib763.fs.save_load import load_str_from_file, save_str_to_file
+
+def save_object_to_file(obj: object, path: str) -> None:
+    """オブジェクトをpickleファイルとして保存します。
+
+    Args:
+        obj: 保存するオブジェクト
+        path: 保存するパス
+    """
+    with open(path, "wb") as f:
+        pickle.dump(obj, f)
+
+
+def load_object_from_file(path: str) -> object:
+    """指定したパスのpickleファイルからオブジェクトを読み込みます。
+
+    Args:
+        path: 読み込むパス
+
+    Returns:
+        保存されていたオブジェクト
+
+    Raises:
+        FileNotFoundError: 指定したパスが存在しない場合
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"No such file: {path}")
+    with open(path, "rb") as f:
+        obj = pickle.load(f)
+    return obj
+
+
+def save_str_to_file(sentence: str, path: str, encoding="utf-8") -> None:
+    """文字列データを指定したパスにテキストファイルとして保存します。
+
+    Args:
+        sentence: 文字列データ
+        path: 保存するパス
+        encoding: エンコーディング
+    """
+    with open(path, "w", encoding=encoding) as f:
+        f.write(sentence)
+
+
+def append_str_to_file(sentence: str, path: str, encoding="utf-8") -> None:
+    """文字列データを指定したパスに追記します。
+
+    Args:
+        sentence: 文字列データ
+        path: 保存するパス
+        encoding: エンコーディング
+
+    Raises:
+        FileNotFoundError: 指定したパスが存在しない場合
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"No such file: {path}")
+    with open(path, "a", encoding=encoding) as f:
+        f.write(sentence)
+
+
+def load_str_from_file(path: str, encoding="utf-8") -> str:
+    """指定したパスのテキストファイルの内容を取得します。
+
+    Args:
+        path: パス
+
+    Returns:
+        テキストファイルの内容
+
+    Raises:
+        FileNotFoundError: 指定したパスが存在しない場合
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"No such file: {path}")
+    with open(path, "r", encoding=encoding) as f:
+        lines = [line.rstrip() for line in f]
+    return "\n".join(lines)
+
+
+def get_all_file_path_in(target_dir: str) -> list:
+    """指定したディレクトリ内のすべてのファイルのパスを取得します。
+
+    Args:
+        target_dir: 対象とするディレクトリ
+
+    Returns:
+        対象ディレクトリ内のすべてのファイルのパス
+    """
+    return [
+        path.replace("\\", "/")
+        for path in glob.glob(target_dir + "/**/*", recursive=True)
+        if (os.path.isfile(path))
+    ]
+
+
+def get_all_dir_path_in(target_dir: str) -> list:
+    """指定したディレクトリ内のすべてのサブディレクトリのパスを取得します。
+
+    Args:
+        target_dir: 対象とするディレクトリ
+
+    Returns:
+        対象ディレクトリ内のすべてのサブディレクトリ
+    """
+    return [
+        path.replace("\\", "/")
+        for path in glob.glob(target_dir + "/*/", recursive=True)
+        if (os.path.isdir(path))
+    ]
+
+
+def get_all_dir_names_in(target_dir: str) -> list:
+    """対象のフォルダ直下のフォルダ名を取得します。
+
+    Args:
+        target_dir: 対象のフォルダのパス
+
+    Returns:
+        対象のフォルダ直下のフォルダ名
+    """
+    return [
+        dir_name
+        for dir_name in os.listdir(target_dir)
+        if os.path.isdir(os.path.join(target_dir, dir_name))
+    ]
+
+
+def get_all_file_names_in(target_dir: str) -> list:
+    """対象のフォルダ直下のファイル名を取得します。
+
+    Args:
+        target_dir: 対象のフォルダのパス
+
+    Returns:
+        対象のフォルダ直下のファイル名
+    """
+    return [
+        file_name
+        for file_name in os.listdir(target_dir)
+        if os.path.isfile(os.path.join(target_dir, file_name))
+    ]
+
+
+def get_file_extension(path: str) -> str:
+    """ファイルの拡張子の文字列を取得します。
+
+    Args:
+        path: ファイルのパス
+
+    Returns:
+        ファイルの拡張子
+    """
+    return os.path.splitext(path)[-1]
+
+
+def get_file_name(path: str) -> str:
+    """ファイル名の文字列を取得します。
+
+    Args:
+        path: ファイルのパス
+
+    Returns:
+        ファイルの名前
+    """
+    return os.path.basename(path)
+
+
+def get_parent_directory(file_path: str) -> str:
+    """ファイルのパスから直下のディレクトリを取得します。
+
+    Args:
+        file_path: ファイルのパス
+
+    Returns:
+        ファイルの存在する直下のディレクトリのパス
+    """
+    return os.path.dirname(file_path)
+
+
+def get_dir_size(target_dir: str) -> int:
+    """指定したディレクトリのサイズを返します。
+
+    Args:
+        target_dir: 対象とするディレクトリ
+
+    Returns:
+        ディレクトリのサイズ
+    """
+    total = 0
+    with os.scandir(target_dir) as it:
+        for entry in it:
+            if entry.is_file():
+                total += entry.stat().st_size
+            elif entry.is_dir():
+                total += get_dir_size(entry.path)
+    return total
+
+
+def get_file_size(target_file: str) -> int:
+    """指定したファイルのサイズを返します。
+
+    Args:
+        target_file: 対象とするファイル
+
+    Returns:
+        ファイルのサイズ
+    """
+    return os.path.getsize(target_file)
+
+
+def get_file_encoding(path: str) -> str:
+    """
+    Given a file path, detects and returns the file's encoding.
+
+    Args:
+        path (str): The path of the file to read.
+
+    Returns:
+        str: The predicted encoding of the file.
+
+    Raises:
+        Exception: If there's an error opening/reading the file or detecting its encoding.
+    """
+    try:
+        with open(path, "rb") as f:
+            result = chardet.detect(f.read())
+        return result["encoding"]
+    except Exception as e:
+        raise Exception(f"Error occurred while getting file encoding: {e}")
+
+
+def change_encoding(sentence: str, before: str, after: str) -> str:
+    """
+    Changes the encoding of a given string.
+
+    Args:
+        sentence (str): The string whose encoding needs to be changed.
+        before (str): The original encoding of the string.
+        after (str): The target encoding to change to.
+
+    Returns:
+        str: The string with its encoding changed.
+
+    Raises:
+        Exception: If there's an error changing the encoding of the string.
+    """
+    try:
+        return sentence.encode(before).decode(after)
+    except Exception as e:
+        raise Exception(f"Error occurred while changing encoding: {e}")
+
+
+def change_file_encoding(path: str, encoding: str) -> None:
+    """
+    Change the encoding of a file.
+
+    This function reads a file, determines its current encoding,
+    reads the contents, deletes the file, and saves the content back to
+    a new file with a new encoding.
+
+    Args:
+        path: The path to the file.
+        encoding: The new encoding to apply to the file.
+
+    Raises:
+        IOError: An error occurred accessing the file.
+    """
+    sentence = load_str_from_file(path, encoding=get_file_encoding(path))
+    rmrf(path)
+    save_str_to_file(sentence, path, encoding=encoding)
+
+
+from typing import Union, List
 
 
 def mkdir(target_dir: str, folder_name: str) -> Union[str, None]:
