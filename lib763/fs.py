@@ -5,6 +5,7 @@ import fnmatch
 import chardet
 import glob
 import pickle
+from typing import Union, List, Optional
 
 
 def save_object_to_file(obj: object, path: str) -> None:
@@ -173,6 +174,19 @@ def get_file_name(path: str) -> str:
     return os.path.basename(path)
 
 
+def get_file_name_without_ext(path: str) -> Optional[str]:
+    """ファイルパスからファイル名を取得し、拡張子を除いたものを返す関数
+
+    Args:
+        path (str): 対象となるファイルのパス
+
+    Returns:
+        Optional[str]: 拡張子を除いたファイル名。パスが無効な場合はNone
+    """
+    file_name = get_file_name(path)
+    return os.path.splitext(file_name)[0] if file_name else None
+
+
 def get_parent_directory(file_path: str) -> str:
     """ファイルのパスから直下のディレクトリを取得します。
 
@@ -276,9 +290,6 @@ def change_file_encoding(path: str, encoding: str) -> None:
     sentence = load_str_from_file(path, encoding=get_file_encoding(path))
     rmrf(path)
     save_str_to_file(sentence, path, encoding=encoding)
-
-
-from typing import Union, List
 
 
 def mkdir(target_dir: str, folder_name: str) -> Union[str, None]:
