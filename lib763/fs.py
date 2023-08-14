@@ -199,6 +199,20 @@ def get_parent_directory(file_path: str) -> str:
     return os.path.dirname(file_path)
 
 
+def is_same_path(path1: str, path2: str) -> bool:
+    """
+    2つのパス文字列が同じパスを表しているかを確認する関数。
+
+    Args:
+        path1 (str): 比較する最初のパス。
+        path2 (str): 比較する2つ目のパス。
+
+    Returns:
+        bool: 2つのパスが同じ場合はTrue、異なる場合はFalse。
+    """
+    return os.path.normpath(path1) == os.path.normpath(path2)
+
+
 def get_dir_size(target_dir: str) -> int:
     """指定したディレクトリのサイズを返します。
 
