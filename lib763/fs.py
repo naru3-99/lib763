@@ -508,6 +508,29 @@ def create_zip(directory_path, archive_name):
     shutil.make_archive(archive_name, "zip", directory_path)
 
 
+def create_zip(files: List[str], zip_filename: str) -> List[str]:
+    """
+    与えられたファイルのパスのリストから、一つのzipファイルを作成する関数。
+    存在しないファイルのパスはリストとして返します。
+
+    Args:
+        files (List[str]): zipファイルに含めるファイルのパスのリスト。
+        zip_filename (str): 作成するzipファイルの名前。
+
+    Returns:
+        List[str]: 存在しないファイルのパスのリスト。
+    """
+    non_existent_files = []
+    with zipfile.ZipFile(zip_filename, "w") as zipf:
+        for file in files:
+            if os.path.isfile(file):
+                zipf.write(file, os.path.basename(file))
+            else:
+                non_existent_files.append(file)
+
+    return non_existent_files
+
+
 def unzip(archive_path, extract_path=None):
     """
     Extract all files from a zip archive.
