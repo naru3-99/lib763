@@ -508,7 +508,7 @@ def create_zip(directory_path, archive_name):
     shutil.make_archive(archive_name, "zip", directory_path)
 
 
-def create_zip(files: List[str], zip_filename: str) -> List[str]:
+def create_zip_from_list(files: List[str], zip_filename: str) -> List[str]:
     """
     与えられたファイルのパスのリストから、一つのzipファイルを作成する関数。
     存在しないファイルのパスはリストとして返します。
