@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Pattern
+from typing import Dict, Pattern, List
 
 # 数字に一致するパターン
 PATTERN_DIGIT = r"\d"
@@ -44,3 +44,17 @@ def replace_patterns(input_string: str, replacements: Dict[Pattern, str]) -> str
     for pattern, replacement in replacements.items():
         input_string = replace_pattern(input_string, pattern, replacement)
     return input_string
+
+
+def extract_matching_strings(input_string: str, pattern: str) -> List[str]:
+    """
+    Extracts matching strings from the input string based on the provided pattern.
+
+    Args:
+        input_string (str): The input string to search for matches.
+        pattern (str): The regular expression pattern to use for matching.
+
+    Returns:
+        List[str]: A list of matching strings found in the input string.
+    """
+    return re.findall(pattern, input_string)
