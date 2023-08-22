@@ -58,3 +58,18 @@ def extract_matching_strings(input_string: str, pattern: str) -> List[str]:
         List[str]: A list of matching strings found in the input string.
     """
     return re.findall(pattern, input_string)
+
+
+def contains_substring(input_string: str, substring: str) -> bool:
+    """
+    Check if the input string contains the specified substring using regular expressions.
+
+    Args:
+        input_string (str): The input string to search within.
+        substring (str): The substring to search for.
+
+    Returns:
+        bool: True if the substring is found, False otherwise.
+    """
+    pattern = re.escape(substring)
+    return re.search(pattern, input_string) is not None
