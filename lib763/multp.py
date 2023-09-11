@@ -76,6 +76,12 @@ class EventHandler:
         self._event.set()
         self._call_handlers()
 
+    def get_current_event_type(self):
+        """
+        Returns the current event type.
+        """
+        return self.cur_event_type
+
     def clear_event(self, event_type: str = None):
         """
         Clears the event and resets the current event type.
