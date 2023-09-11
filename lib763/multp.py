@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import time
 from typing import Any, Callable, List, Union
 
 
@@ -96,16 +97,27 @@ class EventHandler:
         self._event.clear()
         self.cur_event_type = None
 
-    def wait(self, timeout: float = None):
+    def wait(self, event_type: str = None, timeout: float = None):
         """
         Waits for the event to be set.
 
         Parameters:
+            event_type (str): The type of the event to wait for. If None, waits for any event to be set.
             timeout (float): The maximum time to wait for the event to be set.
         Returns:
             bool: True if the event was set, False otherwise.
         """
-        return self._event.wait(timeout)
+        if event_type is None:
+            return self._event.wait(timeout)
+
+        start_time = time.time()
+
+        while True:
+            if time.time() - start_time > timeout:
+                return False
+            if self.get_current_event_type() == event_type:
+                return True
+            time.sleep(0.2)
 
     def register_handler(self, event_type: str, handler: Callable):
         """
