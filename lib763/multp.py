@@ -58,7 +58,7 @@ class EventHandler:
         Initializes a new Event object.
         """
         self._event = mp.Event()
-        self.cur_event_type = mp.Value("i")
+        self.cur_event_type = mp.Value("i",-1)
         # dict[type] = handlers_list
         self.type_handlers_dict = {}
 
@@ -73,7 +73,7 @@ class EventHandler:
         if event_type is not None and not isinstance(event_type, int):
             raise ValueError("event_type must be an integer or None")
         if not event_type is None:
-            self.cur_event_type = event_type
+            self.cur_event_type.value = event_type
             if not event_type in self.type_handlers_dict.keys():
                 self.type_handlers_dict[event_type] = []
         self._event.set()
@@ -83,7 +83,7 @@ class EventHandler:
         """
         Returns the current event type.
         """
-        return self.cur_event_type
+        return self.cur_event_type.value
 
     def clear_event(self, event_type: int = None):
         """
@@ -96,11 +96,11 @@ class EventHandler:
             raise ValueError("event_type must be an integer or None")
 
         if not event_type == None:
-            if event_type != self.cur_event_type:
-                print(f"current event is {self.cur_event_type}, not {event_type}")
+            if event_type != self.cur_event_type.value:
+                print(f"current event is {self.cur_event_type.value}, not {event_type}")
                 return
         self._event.clear()
-        self.cur_event_type = None
+        self.cur_event_type.value = -1
 
     def wait(self, event_type: int = None, timeout: float = None):
         """
@@ -151,5 +151,5 @@ class EventHandler:
         """
         Calls all registered handlers for the current event type.
         """
-        for func in self.type_handlers_dict[self.cur_event_type]:
+        for func in self.type_handlers_dict[self.cur_event_type.value]:
             func()
