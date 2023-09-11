@@ -58,18 +58,20 @@ class EventHandler:
         Initializes a new Event object.
         """
         self._event = mp.Event()
-        self.cur_event_type = None
+        self.cur_event_type = mp.Value("i")
         # dict[type] = handlers_list
         self.type_handlers_dict = {}
 
-    def set_event(self, event_type: str = None):
+    def set_event(self, event_type: int = None):
         """
         Sets the event and calls the registered handlers.
 
         Parameters:
-            event_type (str): The type of the event.
+            event_type (int): The type of the event.
                               If specified, the current event type will be set to this value.
         """
+        if event_type is not None and not isinstance(event_type, int):
+            raise ValueError("event_type must be an integer or None")
         if not event_type is None:
             self.cur_event_type = event_type
             if not event_type in self.type_handlers_dict.keys():
@@ -83,13 +85,16 @@ class EventHandler:
         """
         return self.cur_event_type
 
-    def clear_event(self, event_type: str = None):
+    def clear_event(self, event_type: int = None):
         """
         Clears the event and resets the current event type.
         Parameters:
-        event_type (str): The type of the event.
+        event_type (int): The type of the event.
                           If specified, the current event type will be set to this value.
         """
+        if event_type is not None and not isinstance(event_type, int):
+            raise ValueError("event_type must be an integer or None")
+
         if not event_type == None:
             if event_type != self.cur_event_type:
                 print(f"current event is {self.cur_event_type}, not {event_type}")
@@ -97,16 +102,19 @@ class EventHandler:
         self._event.clear()
         self.cur_event_type = None
 
-    def wait(self, event_type: str = None, timeout: float = None):
+    def wait(self, event_type: int = None, timeout: float = None):
         """
         Waits for the event to be set.
 
         Parameters:
-            event_type (str): The type of the event to wait for. If None, waits for any event to be set.
+            event_type (int): The type of the event to wait for. If None, waits for any event to be set.
             timeout (float): The maximum time to wait for the event to be set.
         Returns:
             bool: True if the event was set, False otherwise.
         """
+        if event_type is not None and not isinstance(event_type, int):
+            raise ValueError("event_type must be an integer or None")
+
         if event_type is None:
             return self._event.wait(timeout)
 
@@ -120,14 +128,17 @@ class EventHandler:
                 return True
             time.sleep(0.2)
 
-    def register_handler(self, event_type: str, handler: Callable):
+    def register_handler(self, event_type: int, handler: Callable):
         """
         Registers a new handler for the specified event type.
 
         Parameters:
-            event_type (str): The type of the event.
+            event_type (int): The type of the event.
             handler (Callable): The handler function to be called when the event is set.
         """
+        if event_type is not None and not isinstance(event_type, int):
+            raise ValueError("event_type must be an integer or None")
+
         if not callable(handler):
             raise TypeError("handler must be Callable")
 
