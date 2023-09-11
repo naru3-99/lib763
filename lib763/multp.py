@@ -113,8 +113,9 @@ class EventHandler:
         start_time = time.time()
 
         while True:
-            if time.time() - start_time > timeout:
-                return False
+            if not timeout is None:
+                if time.time() - start_time > timeout:
+                    return False
             if self.get_current_event_type() == event_type:
                 return True
             time.sleep(0.2)
