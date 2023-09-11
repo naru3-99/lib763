@@ -76,10 +76,17 @@ class EventHandler:
         self._event.set()
         self._call_handlers()
 
-    def clear_event(self):
+    def clear_event(self, event_type: str = None):
         """
         Clears the event and resets the current event type.
+        Parameters:
+        event_type (str): The type of the event.
+                          If specified, the current event type will be set to this value.
         """
+        if not event_type == None:
+            if event_type != self.cur_event_type:
+                print(f"current event is {self.cur_event_type}, not {event_type}")
+                return
         self._event.clear()
         self.cur_event_type = None
 
@@ -104,7 +111,7 @@ class EventHandler:
         """
         if not callable(handler):
             raise TypeError("handler must be Callable")
-        
+
         if not event_type is None:
             if not event_type in self.type_handlers_dict.keys():
                 self.type_handlers_dict[event_type] = []
