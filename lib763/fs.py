@@ -86,6 +86,20 @@ def load_str_from_file(path: str, encoding="utf-8") -> str:
     return "\n".join(lines)
 
 
+def get_file_rows_iter(path: str, encoding="utf-8") -> list:
+    """
+    Returns an iterator over the rows of a file located at the given path.
+
+    Args:
+        path (str): The path to the file.
+        encoding (str, optional): The encoding of the file. Defaults to "utf-8".
+
+    Returns:
+        list: An iterator over the rows of the file.
+    """
+    return load_str_from_file(path, encoding=encoding).replace("\n\n", "\n").split("\n")
+
+
 def get_all_file_path_in(target_dir: str) -> list:
     """指定したディレクトリ内のすべてのファイルのパスを取得します。
 
