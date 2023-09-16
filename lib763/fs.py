@@ -445,7 +445,7 @@ def copy_file(load_path: str, save_path: str) -> None:
         load_path (str): コピー元のパス
         save_path (str): コピー先のパス
     """
-    return save_str_to_file(load_str_from_file(load_path), save_path)
+    shutil.copy(load_path, save_path)
 
 
 def rename(target_dir: str, before: str, after: str, force=False) -> bool:
