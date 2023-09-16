@@ -512,6 +512,20 @@ def move_file(src_path: str, dst_path: str) -> bool:
         return False
 
 
+def rename_dir(target_dir: str, after: str) -> None:
+    """
+    Rename a directory.
+
+    Args:
+        target_dir (str): The path to the directory to rename.
+        after (str): The new name for the directory.
+
+    Returns:
+        None
+    """
+    os.rename(target_dir, os.path.join(os.path.dirname(target_dir), after))
+
+
 def create_zip(directory_path, archive_name):
     """zipによる圧縮を行います。
 
