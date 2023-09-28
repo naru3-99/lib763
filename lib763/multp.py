@@ -32,20 +32,21 @@ def stop_process(process: mp.Process) -> None:
         process.terminate()
 
 
-def parallel_process(func: Callable[[Any], Any], data_list: List[Any]) -> List[Any]:
+def parallel_process(func: Callable[..., Any], data_list: List[Any]) -> List[Any]:
     """
     Applies the specified function to every element in the list using multiprocessing to parallelize the operation.
 
     Args:
-        func (Callable[[Any], Any]): A function that takes a single argument and returns a value.
-        data_list (List[Any]): A list of elements to which the function will be applied.
+        func (Callable[..., Any]): A function that takes one or more arguments and returns a value.
+        data_list (List[Any]): A list of elements (or tuples of elements) to which the function will be applied.
 
     Returns:
         List[Any]: A list of results after applying the function to the elements of data_list.
-
     """
     pool = mp.Pool(mp.cpu_count())
-    result = pool.map(func, data_list)
+
+    # Using starmap to allow function to accept multiple arguments
+    result = pool.starmap(func, data_list)
 
     pool.close()
     pool.join()
@@ -58,7 +59,7 @@ class EventHandler:
         Initializes a new Event object.
         """
         self._event = mp.Event()
-        self.cur_event_type = mp.Value("i",-1)
+        self.cur_event_type = mp.Value("i", -1)
         # dict[type] = handlers_list
         self.type_handlers_dict = {}
 
