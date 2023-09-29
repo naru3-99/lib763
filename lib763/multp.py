@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import concurrent.futures
 import time
 from typing import Any, Callable, List, Union
 
@@ -34,7 +35,7 @@ def stop_process(process: mp.Process) -> None:
 
 def parallel_process(func: Callable[..., Any], data_list: List[Any]) -> List[Any]:
     """
-    Applies the specified function to every element in the list using multiprocessing to parallelize the operation.
+    Applies the specified function to every element in the list using concurrent.futures to parallelize the operation.
 
     Args:
         func (Callable[..., Any]): A function that takes one or more arguments and returns a value.
@@ -43,14 +44,9 @@ def parallel_process(func: Callable[..., Any], data_list: List[Any]) -> List[Any
     Returns:
         List[Any]: A list of results after applying the function to the elements of data_list.
     """
-    pool = mp.Pool(mp.cpu_count())
-
-    # Using starmap to allow function to accept multiple arguments
-    result = pool.starmap(func, data_list)
-
-    pool.close()
-    pool.join()
-    return result
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = executor.map(func, data_list)
+    return list(results)
 
 
 class EventHandler:
