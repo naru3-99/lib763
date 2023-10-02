@@ -15,5 +15,7 @@ setup(
         "mouse",
         "pyperclip",
         "pyautogui",
+        "requests",
+        "tqdm",
     ],
 )
