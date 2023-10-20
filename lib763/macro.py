@@ -1,7 +1,8 @@
-from lib763.fs import rmrf
+from lib763.fs import rmrf, save_str_to_file, get_file_rows_iter
 
 import keyboard as kb
 import mouse
+import os
 import time
 import pyperclip
 import ctypes
@@ -115,6 +116,102 @@ class MouseKeyboard:
         for _ in range(times):
             mouse.wheel(-1)
         time.sleep(self.wait_time)
+
+    def drag_and_drop(
+        self, start_coordinate: tuple, end_coordinate: tuple, duration: float = 1
+    ) -> None:
+        """
+        Drags the mouse from the start_coordinate to the end_coordinate.
+
+        Args:
+            start_coordinate (tuple): The coordinates to start the drag. Should be in the form (x, y).
+            end_coordinate (tuple): The coordinates to end the drag. Should be in the form (x, y).
+            duration (float): Time duration to perform the drag operation in seconds. Default to 1 second.
+        """
+        # スタート地点へ移動
+        self.move_mouse(start_coordinate)
+        # 右クリックを押しっぱなしにする
+        mouse.press(button="right")
+        time.sleep(self.wait_time)
+
+        # エンド地点へ移動
+        x, y = (
+            end_coordinate[0] // self.display_scale,
+            end_coordinate[1] // self.display_scale,
+        )
+        mouse.move(x, y, absolute=True, duration=duration)
+        time.sleep(self.wait_time)
+
+        # 右クリックを放す
+        mouse.release(button="right")
+        time.sleep(self.wait_time)
+
+    def replay_drag(self, path: str, duration: float = 1) -> None:
+        """
+        Replay a recorded drag operation.
+
+        Args:
+            path (str): The path to the file containing the recorded drag operation.
+            duration (float, optional): The duration of the drag operation. Defaults to 1.
+
+        Returns:
+            None
+        """
+        if not (os.path.exists(path) and os.path.isfile(path)):
+            print("No drag record to replay.")
+            return
+        drag_record = [
+            (int(row[0]), int(row[1]), float(row[2]))
+            for row in get_file_rows_iter(path)
+        ]
+
+        mouse.press(button="right")
+        time.sleep(self.wait_time)
+        initial_time = 0
+        for x, y, t in drag_record:
+            elapsed = t - initial_time
+            time.sleep(elapsed)
+            mouse.move(x, y, absolute=True, duration=duration)
+            initial_time = t
+
+        mouse.release(button="right")
+        time.sleep(self.wait_time)
+
+
+class RecordDrag:
+    def __init__(self):
+        self.drag_record = []  # ドラッグ操作の記録用リスト
+        self.start_time = 0
+
+    def record_drag_operation(self, save_path: str):
+        """
+        Records mouse drag operation and saves it to a file.
+        press 'f' to stop recording.
+
+        Args:
+            save_path (str): The path to save the recorded drag operation.
+
+        Returns:
+            None
+        """
+        self.drag_record = []
+        self.start_time = time.time()
+        mouse.hook(self._record_mouse)
+
+        print("Recording started. Press 'f' to stop recording.")
+        kb.wait("f")  # 'f' キーが押されるまで待機
+        mouse.unhook(self._record_mouse)
+
+        save_str_to_file(
+            "\n".join([f"{x},{y},{t}" for x, y, t in self.drag_record]), save_path
+        )
+        print(f"Recording stopped. Saved file: {save_path}")
+
+    def _record_mouse(self, event) -> None:
+        """マウスイベントを記録する内部関数"""
+        self.drag_record.append(
+            (event.x, event.y, round(time.time() - self.start_time, 5))
+        )
 
 
 class Macro(MouseKeyboard):
