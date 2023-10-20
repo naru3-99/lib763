@@ -320,6 +320,19 @@ def change_file_encoding(path: str, encoding: str) -> None:
     save_str_to_file(sentence, path, encoding=encoding)
 
 
+def is_exists(path: str) -> bool:
+    """
+    指定されたパスが存在するかを確認します。
+
+    Args:
+        path (str): 存在を確認するパス
+
+    Returns:
+        bool: 指定されたパスが存在する場合には True、存在しない場合には False
+    """
+    return os.path.exists(path)
+
+
 def mkdir(target_dir: str, folder_name: str) -> Union[str, None]:
     """
     指定したパスに新しいディレクトリを作成します。
@@ -448,7 +461,17 @@ def copy_file(load_path: str, save_path: str) -> None:
     shutil.copy(load_path, save_path)
 
 
-def rename(target_dir: str, before: str, after: str, force=False) -> bool:
+def copy_dir(load_path: str, save_path: str) -> None:
+    """ディレクトリを再帰的にコピーします。
+
+    Args:
+        load_path (str): コピー元のパス
+        save_path (str): コピー先のパス
+    """
+    shutil.copytree(load_path, save_path)
+
+
+def rename_file(target_dir: str, before: str, after: str, force=False) -> bool:
     """ファイルをリネームします。
 
     Args:
@@ -478,6 +501,20 @@ def rename(target_dir: str, before: str, after: str, force=False) -> bool:
     except Exception as e:
         print(f"Error renaming file: {e}")
         return False
+
+
+def rename_dir(target_dir: str, after: str) -> None:
+    """
+    Rename a directory.
+
+    Args:
+        target_dir (str): The path to the directory to rename.
+        after (str): The new name for the directory.
+
+    Returns:
+        None
+    """
+    os.rename(target_dir, os.path.join(os.path.dirname(target_dir), after))
 
 
 def move_file(src_path: str, dst_path: str) -> bool:
@@ -510,20 +547,6 @@ def move_file(src_path: str, dst_path: str) -> bool:
     except Exception as e:
         print(f"Can't move file: '{src_path}' to '{dst_path}'. Reason: {e}")
         return False
-
-
-def rename_dir(target_dir: str, after: str) -> None:
-    """
-    Rename a directory.
-
-    Args:
-        target_dir (str): The path to the directory to rename.
-        after (str): The new name for the directory.
-
-    Returns:
-        None
-    """
-    os.rename(target_dir, os.path.join(os.path.dirname(target_dir), after))
 
 
 def create_zip(directory_path, archive_name):
