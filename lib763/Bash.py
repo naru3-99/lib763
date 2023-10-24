@@ -1,46 +1,73 @@
-import subprocess
-from subprocess import TimeoutExpired
+import subprocess as sbp
+import os
 from typing import Tuple, List, Optional
 
 
 class Bash:
-    def __init__(self, cwd: str, sudo_password: str) -> None:
-        """Bashコマンドを実行するクラス。
+    """A class for executing Bash commands.
+
+    Attributes:
+        current_directory: The current working directory for executing commands.
+        sudo_password: The password to use for sudo commands.
+    """
+
+    def __init__(
+        self, cwd: Optional[str] = None, sudo_password: Optional[str] = None
+    ) -> None:
+        """Initializes the Bash object.
 
         Args:
-            cwd (str): 初期の作業ディレクトリ。
-            sudo_password (str): `sudo`コマンド実行時に必要なパスワード。
+            cwd: The current working directory. Defaults to the current directory.
+            sudo_password: The password for sudo. Defaults to None.
+
         """
-        self.current_directory = cwd
+        self.current_directory = (
+            os.path.abspath(cwd) if cwd is not None else os.getcwd()
+        )
         self.sudo_password = sudo_password
 
     def cd(self, dir_path: str) -> None:
-        """作業ディレクトリを更新する。
+        """Changes the current working directory.
 
         Args:
-            dir_path (str): 移動先のディレクトリのパス。
+            dir_path: The directory path to change to.
+
+        Raises:
+            FileNotFoundError: If the directory does not exist.
         """
-        self.current_directory = dir_path
+        abs_path = os.path.abspath(dir_path)
+        if os.path.exists(abs_path):
+            self.current_directory = abs_path
+        else:
+            raise FileNotFoundError(f"{abs_path} not found.")
 
     def execute(
         self, command: str, user_input: Optional[List[str]] = None, timeout: int = 5
     ) -> Tuple[int, int, str, str]:
-        """指定したシェルコマンドを実行する。
+        """Executes a shell command.
 
         Args:
-            command (str): 実行するコマンド。
-            user_input (Optional[List[str]]): コマンド実行時のユーザー入力。Noneの場合、ユーザー入力は不要。
-            timeout (int): コマンドの最大実行時間（秒）。
+            command: The command to execute.
+            user_input: A list of strings for user input to the command. Defaults to None.
+            timeout: The time in seconds to wait for the command. Defaults to 5.
 
         Returns:
-            Tuple[int, int, str, str]: プロセスID、終了コード、標準出力、標準エラー出力。
+            A tuple containing:
+                - Process ID
+                - Return code
+                - Standard output
+                - Standard error
+
+        Raises:
+            subprocess.TimeoutExpired: If the command times out.
+            Exception: For other exceptions from subprocess.
         """
         try:
-            proc = subprocess.Popen(
+            proc = sbp.Popen(
                 command,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdin=sbp.PIPE,
+                stdout=sbp.PIPE,
+                stderr=sbp.PIPE,
                 cwd=self.current_directory,
                 text=True,
                 shell=True,
@@ -48,28 +75,47 @@ class Bash:
             pid = proc.pid
 
             if user_input is not None:
-                user_input = "\n".join(user_input)
-                stdout, stderr = proc.communicate(user_input, timeout=timeout)
+                user_input_str = "\n".join(user_input)
+                stdout, stderr = proc.communicate(user_input_str, timeout=timeout)
             else:
                 stdout, stderr = proc.communicate(timeout=timeout)
 
-        except TimeoutExpired:
+        except sbp.TimeoutExpired:
             return proc.pid, proc.returncode, "", "Command execution timed out"
+        except Exception as e:
+            return 0, -1, "", str(e)
+
         return pid, proc.returncode, stdout, stderr
 
     def sudo_execute(
         self, command: str, user_input: Optional[List[str]] = None, timeout: int = 5
     ) -> Tuple[int, int, str, str]:
-        """指定したシェルコマンドを`sudo`で実行する。
+        """Executes a sudo command.
 
         Args:
-            command (str): 実行するコマンド。
-            user_input (Optional[List[str]]): コマンド実行時のユーザー入力。Noneの場合、ユーザー入力は不要。
-            timeout (int): コマンドの最大実行時間（秒）。
+            command: The command to execute with sudo.
+            user_input: A list of strings for user input to the command. Defaults to None.
+            timeout: The time in seconds to wait for the command. Defaults to 5.
 
         Returns:
-            Tuple[int, int, str, str]: プロセスID、終了コード、標準出力、標準エラー出力。
+            A tuple containing:
+                - Process ID
+                - Return code
+                - Standard output
+                - Standard error
+
+        Raises:
+            NoSudoPasswordError: If no sudo password is provided.
         """
+        if self.sudo_password is None:
+            raise NoSudoPasswordError("No sudo password input")
+
         return self.execute(
             f"echo {self.sudo_password} | sudo -S {command}", user_input, timeout
         )
+
+
+class NoSudoPasswordError(Exception):
+    """Exception raised for missing sudo password."""
+
+    pass
