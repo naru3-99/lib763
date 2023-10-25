@@ -1,205 +1,218 @@
-from lib763.fs import rmrf, save_str_to_file, get_file_rows_iter
-
-import keyboard as kb
-import mouse
-import os
-import time
-import pyperclip
 import ctypes
-import cv2
-from PIL import ImageGrab
-from typing import Union
+import time
+import mouse
+import keyboard
+import pyautogui
+
+from lib763.fs import save_str_to_file
 
 
-class MouseKeyboard:
-    """
-    Class for controlling a computer's mouse and keyboard.
-
-    Attributes:
-        wait_time (float): The wait time between keyboard or mouse actions.
-        display_scale (float): The scale of the display.
-    """
-
-    def __init__(self, wait_time=0.5) -> None:
+class Macro:
+    def __init__(self, wait_time=0.1) -> None:
         """
-        Constructs all the necessary attributes for the MouseKeyboard object.
+        Initializes the Macro object with a specified wait time.
 
         Args:
-            wait_time (float): The wait time between keyboard or mouse actions. Defaults to 0.5.
+        - wait_time: A float representing the wait time between actions.
         """
-        self.wait_time = wait_time
-        self.display_scale = self.__get_display_scale()
+        # set pause time
+        pyautogui.PAUSE = wait_time
+        # constant for display size
+        self.DISPLAY_SIZE = pyautogui.size()
 
-    def __get_display_scale(self) -> float:
-        """
-        Retrieves the display scale by interacting with the operating system.
-
-        Returns:
-            float: The scale of the display.
-        """
+        # constant for display scale
+        # this is like 1.5, which means "150%" in windows settings
+        self.DISPLAY_SCALE = None
         try:
             user32 = ctypes.windll.user32
             user32.SetProcessDPIAware()
-            return user32.GetDpiForSystem() / 96.0
-        except Exception as e:
-            print("Error:", e)
-            return 1.0
+            self.DISPLAY_SCALE = user32.GetDpiForSystem() / 96.0
+        except Exception:
+            print("Be careful. DISPLAY_SCALE is not set.")
+            pass
 
-    def kb_input(self, input_str: str) -> None:
+    def __validate_coordinate(self, coordinate):
         """
-        Simulates a keyboard input.
-
-        Args:
-            input_str (str): The string to input via the keyboard.
-        """
-        kb.press_and_release(input_str)
-        time.sleep(self.wait_time)
-
-    def backspace(self, times: int):
-        """
-        Simulates pressing the backspace key a certain number of times.
+        Validates if a given coordinate is on screen.
 
         Args:
-            times (int): The number of times to press backspace.
-        """
-        for _ in range(times):
-            kb.press_and_release("backspace")
-        time.sleep(self.wait_time)
+        - coordinate: A tuple representing the x and y coordinates.
 
-    def click(self) -> None:
-        """
-        Simulates a left mouse click.
-        """
-        mouse.click("left")
-        time.sleep(self.wait_time)
-
-    def click_coordinate(self, coordinate: tuple) -> None:
-        """
-        Moves the mouse to a certain coordinate and clicks.
-
-        Args:
-            coordinate (tuple): The coordinates to move the mouse to. Should be in the form (x, y).
+        Returns:
+        - A tuple representing the x and y coordinates.
         """
         try:
             x, y = coordinate
-            if x is None or y is None:
-                raise InvalidCoordinateError(
-                    "One or both of the coordinates are None. Maybe the image couldn't be recognized."
+            if not (type(x) == int and type(y) == int):
+                raise TypeError(
+                    f"coordinate must be (int,int), got ({type(x)},{type(y)})"
                 )
-        except ValueError:
-            print("coordinate is None")
-            return
-        self.move_mouse(coordinate)
-        self.click()
+            if not (pyautogui.onScreen(x, y)):
+                raise ValueError(f"given coordinate is not on screen")
+        except:
+            raise InvalidCoordinateError("coordinate is invalid")
+        return x, y
 
-    def move_mouse(self, coordinate: tuple) -> None:
+    # keyboard functions
+    def type_write(self, words):
         """
-        Moves the mouse to a certain coordinate.
+        Types the given string.
 
         Args:
-            coordinate (tuple): The coordinates to move the mouse to. Should be in the form (x, y).
+        - words: A string representing the text to be typed.
         """
-        x, y = (
-            coordinate[0] // self.display_scale,
-            coordinate[1] // self.display_scale,
-        )
-        mouse.move(x, y, absolute=True, duration=0)
-        time.sleep(self.wait_time)
+        pyautogui.typewrite(words)
 
-    def scroll(self, times: int) -> None:
+    def hotkey(self, *button, interval=0.1):
         """
-        Simulates scrolling the mouse wheel a certain number of times.
+        Simulates a hotkey press.
 
         Args:
-            times (int): The number of times to scroll the mouse wheel.
+        - button: A tuple representing the keys to be pressed.
+        - interval: A float representing the time between key presses.
         """
-        for _ in range(times):
-            mouse.wheel(-1)
-        time.sleep(self.wait_time)
+        pyautogui.hotkey(button, interval=interval)
 
-    def drag_and_drop(
-        self, start_coordinate: tuple, end_coordinate: tuple, duration: float = 1
+    # mouse functions
+    def scroll(self, amount):
+        """
+        Scrolls the mouse wheel.
+
+        Args:
+        - amount: An integer representing the amount to scroll.
+        """
+        pyautogui.scroll(amount)
+
+    def click_coordinate(self, coordinate, count=1):
+        """
+        Clicks on a given coordinate.
+
+        Args:
+        - coordinate: A tuple representing the x and y coordinates.
+        - count: An integer representing the number of clicks to perform.
+        """
+        x, y = self.__validate_coordinate(coordinate)
+        pyautogui.click(x=x, y=y, clicks=count)
+
+    def click_image(self, img_path, count=1):
+        """
+        Assuming there is only one image on the screen, click on that center of image.
+
+        Args:
+        - img_path: A string representing the path to the image file.
+        - count: An integer representing the number of clicks to perform.
+        """
+        x, y = pyautogui.locateCenterOnScreen(img_path)
+        pyautogui.click(x=x, y=y, clicks=count)
+
+    def drag(
+        self,
+        coordinate_ls,
+        duration: float = 1,
+        left_click: bool = False,
+        start_coordinate=None,
     ) -> None:
         """
-        Drags the mouse from the start_coordinate to the end_coordinate.
+        Perform a drag operation on the coordinates given in coordinate_ls.
+        if start_coordinate is set, relative coordinate is used.
 
         Args:
-            start_coordinate (tuple): The coordinates to start the drag. Should be in the form (x, y).
-            end_coordinate (tuple): The coordinates to end the drag. Should be in the form (x, y).
-            duration (float): Time duration to perform the drag operation in seconds. Default to 1 second.
-        """
-        # スタート地点へ移動
-        self.move_mouse(start_coordinate)
-        # 右クリックを押しっぱなしにする
-        mouse.press(button="right")
-        time.sleep(self.wait_time)
-
-        # エンド地点へ移動
-        x, y = (
-            end_coordinate[0] // self.display_scale,
-            end_coordinate[1] // self.display_scale,
-        )
-        mouse.move(x, y, absolute=True, duration=duration)
-        time.sleep(self.wait_time)
-
-        # 右クリックを放す
-        mouse.release(button="right")
-        time.sleep(self.wait_time)
-
-    def replay_drag(self, path: str, duration: float = 1) -> None:
-        """
-        Replay a recorded drag operation.
-
-        Args:
-            path (str): The path to the file containing the recorded drag operation.
-            duration (float, optional): The duration of the drag operation. Defaults to 1.
+        - coordinate_ls: A list of tuples representing the x and y coordinates.
+        - duration: A float representing the duration of the drag operation.
+        - left_click: A boolean representing whether to perform a left-click drag.
+        - start_coordinate: A tuple representing the starting x and y coordinates.
 
         Returns:
-            None
+        - None
         """
-        if not (os.path.exists(path) and os.path.isfile(path)):
-            print("No drag record to replay.")
-            return
-        drag_record = [
-            (int(row[0]), int(row[1]), float(row[2]))
-            for row in get_file_rows_iter(path)
-        ]
+        # validate coordinate
+        coordinate_ls_mod = []
+        if start_coordinate == None:
+            # Perform a drag operation on the coordinates given in coordinate_ls.
+            start_x, start_y = self.__validate_coordinate(coordinate_ls[0])
+            coordinate_ls_mod = [
+                self.__validate_coordinate(c) for c in coordinate_ls[1:]
+            ]
+        else:
+            # Perform a drag operation on the coordinates given in coordinate_ls,
+            # relative to the start point given in start_coordinate.
+            start_x, start_y = self.__validate_coordinate(start_coordinate)
+            before_x, before_y = self.__validate_coordinate(coordinate_ls[0])
+            for c in coordinate_ls[1:]:
+                x, y = self.__validate_coordinate(c)
+                coordinate_ls_mod.append((x - before_x, y - before_y))
+                before_x, before_y = x, y
 
-        mouse.press(button="right")
-        time.sleep(self.wait_time)
-        initial_time = 0
-        for x, y, t in drag_record:
-            elapsed = t - initial_time
-            time.sleep(elapsed)
-            mouse.move(x, y, absolute=True, duration=duration)
-            initial_time = t
+        # move mouse to start coordinate
+        pyautogui.moveTo(x=start_x, y=start_y)
+        # press and hold the left-click button.
+        if left_click:
+            mouse.press(button="left")
 
-        mouse.release(button="right")
-        time.sleep(self.wait_time)
+        # start to drag
+        for x, y in coordinate_ls_mod:
+            if start_coordinate == None:
+                pyautogui.moveTo(x=x, y=y, duration=duration)
+            else:
+                pyautogui.moveRel(x=x, y=y, duration=duration)
+        # release the right-click button
+        if left_click:
+            mouse.release(button="left")
+
+    # other functions
+    def screen_shot(self, save_path):
+        """
+        Takes a screenshot and saves it to a file.
+
+        Args:
+        - save_path: A string representing the path to save the screenshot.
+        """
+        pyautogui.screenshot(save_path)
+
+    def alert_box(self, text):
+        """
+        Displays an alert box with the given text.
+
+        Args:
+        - text: A string representing the text to be displayed.
+        """
+        pyautogui.alert(text)
+
+    def get_all_coordinate(self, img_path):
+        """
+        Returns a list of all coordinates(center of image)
+        where a given image is found.
+
+        Args:
+        - img_path: A string representing the path to the image file.
+
+        Returns:
+        - A list of tuples representing the x and y coordinates.
+        """
+        ret_ls = []
+        for x1, y1, x2, y2 in pyautogui.locateAllOnScreen(img_path):
+            ret_ls.append((int((x1 + x2) / 2), int((y1 + y2) / 2)))
+        return ret_ls
 
 
 class RecordDrag:
     def __init__(self):
-        self.drag_record = []  # ドラッグ操作の記録用リスト
+        self.drag_record = []
         self.start_time = 0
 
     def record_drag_operation(self, save_path: str):
         """
-        Records mouse drag operation and saves it to a file.
-        press 'f' to stop recording.
+        Records a drag operation and saves it to a file.
 
         Args:
-            save_path (str): The path to save the recorded drag operation.
-
-        Returns:
-            None
+        - save_path: A string representing the path to save the recorded drag operation.
         """
         self.drag_record = []
         self.start_time = time.time()
         mouse.hook(self._record_mouse)
 
         print("Recording started. Press 'f' to stop recording.")
-        kb.wait("f")  # 'f' キーが押されるまで待機
+        keyboard.wait("f")
         mouse.unhook(self._record_mouse)
 
         save_str_to_file(
@@ -208,204 +221,19 @@ class RecordDrag:
         print(f"Recording stopped. Saved file: {save_path}")
 
     def _record_mouse(self, event) -> None:
-        """マウスイベントを記録する内部関数"""
+        """
+        Records the mouse event.
+
+        Args:
+        - event: A mouse event.
+        """
         self.drag_record.append(
             (event.x, event.y, round(time.time() - self.start_time, 5))
         )
 
 
-class Macro(MouseKeyboard):
-    """
-    Class for automating mouse and keyboard actions on the computer.
-
-    Inherits from the MouseKeyboard class.
-
-    Attributes:
-        wait_time (float): The wait time between keyboard or mouse actions.
-    """
-
-    def __init__(self, wait_time=0.5) -> None:
-        """
-        Constructs all the necessary attributes for the Macro object.
-
-        Args:
-            wait_time (float): The wait time between keyboard or mouse actions. Defaults to 0.5.
-        """
-        super().__init__(wait_time)
-
-    def click_image(
-        self, image_path: str, screenshot_path: str = "./screenshot.png"
-    ) -> None:
-        """
-        Clicks on an image by taking a screenshot, identifying the image within the screenshot, and clicking on it.
-
-        Args:
-            image_path (str): The path of the image to click on.
-            screenshot_path (str): The path to save the screenshot to. Defaults to "./screenshot.png".
-        """
-        self.get_screen_shot(screenshot_path)
-        coordinate = get_image_coordinate(screenshot_path, image_path)
-        if coordinate is None:
-            raise ImageNotFoundError("Error: No object found")
-        self.click_coordinate(coordinate)
-        rmrf(screenshot_path)
-
-    def get_screen_shot(self, path: str) -> None:
-        """
-        Takes a screenshot and saves it to a specified path.
-
-        Args:
-            path (str): The path to save the screenshot to.
-        """
-        ImageGrab.grab().save(path)
-
-    def copy_text(self, text: str) -> None:
-        """
-        Copies a specified text to the clipboard.
-
-        Args:
-            text (str): The text to copy to the clipboard.
-        """
-        pyperclip.copy(text)
-
-    def paste_text(self, text: str) -> None:
-        """
-        Pastes a specified text by copying it to the clipboard and then simulating a "ctrl+v" keyboard input.
-
-        Args:
-            text (str): The text to paste.
-        """
-        self.copy_text(text)
-        self.kb_input("ctrl+v")
-        time.sleep(1)
-
-    def get_copied_text(self) -> str:
-        """
-        Retrieves the text currently copied to the clipboard.
-
-        Returns:
-            str: The text currently copied to the clipboard.
-        """
-        return pyperclip.paste()
-
-
-def read_image(path: str):
-    """指定されたパスから画像を読み込む"""
-    img = cv2.imread(path)
-    if img is None:
-        raise ImageReadError(f"Error reading image from path: {path}")
-    return img
-
-
-def image_contains(all_picture_path: str, target_picture_path: str) -> bool:
-    """
-    Args:
-        all_picture_path (str): 全体画像のパス
-        target_picture_path (str): 対象画像のパス
-
-    Returns:
-        bool: 全体画像が対象画像を完全に含んでいるかどうか
-    """
-    template = read_image(all_picture_path)
-    image = read_image(target_picture_path)
-    result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
-    _, maxVal, _, _ = cv2.minMaxLoc(result)
-    return maxVal > 0.99
-
-
-def get_image_coordinate(
-    all_picture_path: str, target_picture_path: str
-) -> Union[tuple, None]:
-    """
-    Args:
-        all_picture_path (str): 全体画像のパス
-        target_picture_path (str): 対象画像のパス
-
-    Returns:
-        tuple | None: 対象画像が全体画像の中に含まれている座標（中心点）
-    """
-    template = read_image(all_picture_path)
-    image = read_image(target_picture_path)
-    result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
-    _, maxVal, _, maxLoc = cv2.minMaxLoc(result)
-    if maxVal > 0.99:
-        center_x = maxLoc[0] + image.shape[1] // 2
-        center_y = maxLoc[1] + image.shape[0] // 2
-        return (center_x, center_y)
-    return None
-
-
-def get_subregion_center(
-    all_path: str, subreg_path: str, target_path: str
-) -> Union[tuple, None]:
-    """
-    Args:
-        all_path (str): フルスクリーン画像のパス
-        subreg_path (str): フルスクリーン画像内の目標領域画像のパス
-        target_path (str): 領域内の目標画像のパス
-
-    Returns:
-        tuple | None: フルスクリーン画像内での目標画像の座標
-    """
-    template = read_image(all_path)
-    image = read_image(subreg_path)
-    result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
-    _, maxVal, _, maxLoc = cv2.minMaxLoc(result)
-    if maxVal <= 0.98:
-        return None
-
-    template[:, :, :] = 0
-    template[
-        maxLoc[1] : maxLoc[1] + image.shape[0],
-        maxLoc[0] : maxLoc[0] + image.shape[1],
-        :,
-    ] = image
-
-    target = read_image(target_path)
-    result = cv2.matchTemplate(target, template, cv2.TM_CCORR_NORMED)
-    _, maxVal, _, maxLoc = cv2.minMaxLoc(result)
-    if maxVal <= 0.98:
-        return None
-    center_x = maxLoc[0] + target.shape[1] // 2
-    center_y = maxLoc[1] + target.shape[0] // 2
-    return (center_x, center_y)
-
-
-def mask_img(img_path: str, mask_range: tuple) -> None:
-    """
-    Args:
-        img_path (str): マスクを適用したい画像のパス
-        mask_range (tuple): マスクを適用する座標範囲 (x1, x2, y1, y2)、
-                            ただし x1 < x2、y1 < y2 を満たす必要があります
-
-    この関数は指定した範囲内で画像にマスクを適用します
-    """
-    x1, x2, y1, y2 = mask_range
-    if x1 > x2 or y1 > y2:
-        raise ValueError("エラー： x1 > x2 または y1 > y2")
-
-    im = read_image(img_path)
-    x, y, _ = im.shape
-    if y < x2 or x < y2:
-        raise ValueError("エラー： x < x2 または y < y2")
-
-    im[y1:y2, x1:x2] = 0
-    cv2.imwrite(img_path, im)
-
-
-class ImageReadError(Exception):
-    """Exception raised for errors in the image reading process."""
-
-    pass
-
-
-class ImageNotFoundError(Exception):
-    """Exception raised when an image is not found within another image."""
-
-    pass
-
-
 class InvalidCoordinateError(Exception):
-    """Exception raised for invalid coordinate inputs."""
-
+    """
+    An exception raised when an invalid coordinate is given.
+    """
     pass
