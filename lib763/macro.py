@@ -7,7 +7,13 @@ import pyautogui
 from lib763.fs import save_str_to_file
 
 
+# This Macro Library is for Windows Only
+
+
 class Macro:
+    # CONSTs
+    # DISPLAY_SIZE = (1920,1080)
+    # DISPLAY_SCALE = 1.5(150%)
     def __init__(self, wait_time=0.1) -> None:
         """
         Initializes the Macro object with a specified wait time.
@@ -236,4 +242,5 @@ class InvalidCoordinateError(Exception):
     """
     An exception raised when an invalid coordinate is given.
     """
+
     pass
