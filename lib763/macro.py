@@ -166,14 +166,14 @@ class Macro:
             mouse.release(button="left")
 
     # other functions
-    def screen_shot(self, save_path):
+    def screen_shot(self, save_path=None):
         """
         Takes a screenshot and saves it to a file.
 
         Args:
         - save_path: A string representing the path to save the screenshot.
         """
-        pyautogui.screenshot(save_path)
+        return pyautogui.screenshot(save_path)
 
     def alert_box(self, text):
         """
