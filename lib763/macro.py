@@ -160,8 +160,8 @@ def image_range_to_coordinate(img_range: Tuple[int, int, int, int]) -> Tuple[int
         Tuple[int, int]: 画像の中心座標 (x, y)。
     """
     return (
-        (img_range[0] + img_range[2]) / 2,
-        (img_range[1] + img_range[3]) / 2,
+        int((img_range[0] + img_range[2]) / 2),
+        int((img_range[1] + img_range[3]) / 2),
     )
 
 
