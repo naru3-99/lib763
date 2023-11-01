@@ -4,6 +4,7 @@ import cv2
 import mouse
 import keyboard
 import pyautogui
+import numpy as np
 from typing import Union
 from lib763.fs import save_str_to_file, rmrf
 
@@ -54,7 +55,11 @@ def click_coordinate(coordinate, count=1):
 
 
 def click_image(img_path, count=1):
-    click_coordinate(get_image_coordinate_on_screen(img_path), count=count)
+    coordinate = get_image_coordinate_on_screen(img_path)
+    if coordinate is None:
+        return False
+    click_coordinate(coordinate, count=count)
+    return True
 
 
 def drag(
@@ -104,13 +109,6 @@ def alert_box(text):
     pyautogui.alert(text)
 
 
-def get_all_coordinate(img_path):
-    ret_ls = []
-    for x1, y1, x2, y2 in pyautogui.locateAllOnScreen(img_path):
-        ret_ls.append((int((x1 + x2) / 2), int((y1 + y2) / 2)))
-    return ret_ls
-
-
 def __read_image(path: str):
     """指定されたパスから画像を読み込む"""
     img = cv2.imread(path)
@@ -138,14 +136,29 @@ def is_image_on_screen(target_picture_path):
 def get_image_coordinate(
     all_picture_path: str, target_picture_path: str
 ) -> Union[tuple, None]:
+    image_range = get_image_range(all_picture_path, target_picture_path)
+    if image_range is None:
+        return None
+    return (
+        (image_range[0] + image_range[2]) / 2,
+        (image_range[1] + image_range[3]) / 2,
+    )
+
+
+def get_image_range(
+    all_picture_path: str, target_picture_path: str
+) -> Union[tuple, None]:
     template = __read_image(all_picture_path)
     image = __read_image(target_picture_path)
     result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
     _, maxVal, _, maxLoc = cv2.minMaxLoc(result)
     if maxVal > 0.99:
-        center_x = maxLoc[0] + image.shape[1] // 2
-        center_y = maxLoc[1] + image.shape[0] // 2
-        return (center_x, center_y)
+        return (
+            maxLoc[0],
+            maxLoc[1],
+            maxLoc[0] + image.shape[1],
+            maxLoc[1] + image.shape[0],
+        )
     return None
 
 
@@ -155,6 +168,29 @@ def get_image_coordinate_on_screen(target_picture_path):
     ret = get_image_coordinate(screen_shot_path, target_picture_path)
     rmrf(screen_shot_path)
     return ret
+
+
+def get_all_coordinate_on_screen(target_picture_path):
+    ret_ls = []
+    screen_shot_path = "./screenshot.png"
+    screen_shot(screen_shot_path)
+    while True:
+        coordinate = get_image_coordinate(screen_shot_path, target_picture_path)
+        if coordinate is None:
+            return ret_ls
+        ret_ls.append(coordinate)
+        __mask_img(screen_shot_path, coordinate)
+
+
+def __mask_img(target_picture_path, mask_range):
+    try:
+        x1, x2, y1, y2 = mask_range
+    except:
+        return False
+    img = __read_image(target_picture_path)
+    img[x1:x2, y1:y2] = 0
+    cv2.imwrite(target_picture_path, img)
+    return True
 
 
 class ImageReadError(Exception):
