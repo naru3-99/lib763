@@ -25,16 +25,12 @@ except Exception:
     pass
 
 
-def __validate_coordinate(coordinate):
-    try:
-        x, y = coordinate
-        if not (type(x) == int and type(y) == int):
-            raise TypeError(f"coordinate must be (int,int), got ({type(x)},{type(y)})")
-        if not (pyautogui.onScreen(x, y)):
-            raise ValueError(f"given coordinate is not on screen")
-    except:
-        raise InvalidCoordinateError("coordinate is invalid")
-    return x, y
+def screen_shot(save_path=None):
+    return pyautogui.screenshot(save_path)
+
+
+def alert_box(text):
+    pyautogui.alert(text)
 
 
 def type_write(words):
@@ -47,6 +43,25 @@ def hotkey(*button, interval=0.1):
 
 def scroll(amount):
     pyautogui.scroll(amount)
+
+
+def __validate_coordinate(coordinate):
+    try:
+        x, y = coordinate
+        if not (type(x) == int and type(y) == int):
+            raise TypeError(f"coordinate must be (int,int), got ({type(x)},{type(y)})")
+        if not (pyautogui.onScreen(x, y)):
+            raise ValueError(f"given coordinate is not on screen")
+    except:
+        raise InvalidCoordinateError("coordinate is invalid")
+    return x, y
+
+
+def image_range_to_coordinate(img_range):
+    return (
+        (img_range[0] + img_range[2]) / 2,
+        (img_range[1] + img_range[3]) / 2,
+    )
 
 
 def click_coordinate(coordinate, count=1):
@@ -101,14 +116,6 @@ def drag(
         mouse.release(button="left")
 
 
-def screen_shot(save_path=None):
-    return pyautogui.screenshot(save_path)
-
-
-def alert_box(text):
-    pyautogui.alert(text)
-
-
 def __read_image(path: str):
     """指定されたパスから画像を読み込む"""
     img = cv2.imread(path)
@@ -139,10 +146,7 @@ def get_image_coordinate(
     image_range = get_image_range(all_picture_path, target_picture_path)
     if image_range is None:
         return None
-    return (
-        (image_range[0] + image_range[2]) / 2,
-        (image_range[1] + image_range[3]) / 2,
-    )
+    return image_range_to_coordinate(image_range)
 
 
 def get_image_range(
@@ -179,12 +183,7 @@ def get_all_coordinate_on_screen(target_picture_path):
         if img_range is None:
             rmrf(screen_shot_path)
             return ret_ls
-        ret_ls.append(
-            (
-                (img_range[0] + img_range[2]) / 2,
-                (img_range[1] + img_range[3]) / 2,
-            )
-        )
+        ret_ls.append(image_range_to_coordinate(img_range))
         __mask_img(screen_shot_path, img_range)
 
 
