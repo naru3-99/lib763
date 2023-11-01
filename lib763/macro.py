@@ -53,6 +53,14 @@ def release_clicking(button="left"):
     mouse.release(button)
 
 
+def move_mouse(coordinate):
+    try:
+        x, y = coordinate
+    except:
+        return False
+    pyautogui.moveTo(x=x, y=y)
+
+
 def __validate_coordinate(coordinate):
     try:
         x, y = coordinate
@@ -108,20 +116,20 @@ def drag(
             before_x, before_y = x, y
 
     # move mouse to start coordinate
-    pyautogui.moveTo(x=start_x, y=start_y)
+    move_mouse(x=start_x, y=start_y)
     # press and hold the left-click button.
     if left_click:
-        mouse.press(button="left")
+        keep_clicking(button="left")
 
     # start to drag
     for x, y in coordinate_ls_mod:
         if start_coordinate == None:
-            pyautogui.moveTo(x=x, y=y, duration=duration)
+            move_mouse(x=x, y=y, duration=duration)
         else:
             pyautogui.moveRel(x=x, y=y, duration=duration)
     # release the right-click button
     if left_click:
-        mouse.release(button="left")
+        release_clicking(button="left")
 
 
 def __read_image(path: str):
