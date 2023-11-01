@@ -54,12 +54,7 @@ def click_coordinate(coordinate, count=1):
 
 
 def click_image(img_path, count=1):
-    try:
-        x, y = pyautogui.locateCenterOnScreen(img_path)
-    except:
-        return False
-    pyautogui.click(x=x, y=y, clicks=count)
-    return True
+    click_coordinate(get_image_coordinate_on_screen(img_path), count=count)
 
 
 def drag(
@@ -152,6 +147,7 @@ def get_image_coordinate(
         center_y = maxLoc[1] + image.shape[0] // 2
         return (center_x, center_y)
     return None
+
 
 def get_image_coordinate_on_screen(target_picture_path):
     screen_shot_path = "./screenshot.png"
