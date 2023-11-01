@@ -175,16 +175,22 @@ def get_all_coordinate_on_screen(target_picture_path):
     screen_shot_path = "./screenshot.png"
     screen_shot(screen_shot_path)
     while True:
-        coordinate = get_image_coordinate(screen_shot_path, target_picture_path)
-        if coordinate is None:
+        img_range = get_image_range(screen_shot_path, target_picture_path)
+        if img_range is None:
+            rmrf(screen_shot_path)
             return ret_ls
-        ret_ls.append(coordinate)
-        __mask_img(screen_shot_path, coordinate)
+        ret_ls.append(
+            (
+                (img_range[0] + img_range[2]) / 2,
+                (img_range[1] + img_range[3]) / 2,
+            )
+        )
+        __mask_img(screen_shot_path, img_range)
 
 
 def __mask_img(target_picture_path, mask_range):
     try:
-        x1, x2, y1, y2 = mask_range
+        x1, y1, x2, y2 = mask_range
     except:
         return False
     img = __read_image(target_picture_path)
