@@ -5,7 +5,7 @@ import mouse
 import keyboard
 import pyautogui
 from typing import Union
-from lib763.fs import save_str_to_file
+from lib763.fs import save_str_to_file, rmrf
 
 
 ## CONST
@@ -101,7 +101,6 @@ def drag(
         mouse.release(button="left")
 
 
-# other functions
 def screen_shot(save_path=None):
     return pyautogui.screenshot(save_path)
 
@@ -131,6 +130,14 @@ def image_contains(all_picture_path: str, target_picture_path: str) -> bool:
     result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
     _, maxVal, _, _ = cv2.minMaxLoc(result)
     return maxVal > 0.99
+
+
+def is_image_on_screen(target_picture_path):
+    screen_shot_path = "./screenshot.png"
+    screen_shot(screen_shot_path)
+    ret = image_contains(screen_shot_path, target_picture_path)
+    rmrf(screen_shot_path)
+    return ret
 
 
 def get_image_coordinate(
