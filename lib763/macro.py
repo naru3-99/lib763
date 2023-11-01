@@ -153,6 +153,13 @@ def get_image_coordinate(
         return (center_x, center_y)
     return None
 
+def get_image_coordinate_on_screen(target_picture_path):
+    screen_shot_path = "./screenshot.png"
+    screen_shot(screen_shot_path)
+    ret = get_image_coordinate(screen_shot_path, target_picture_path)
+    rmrf(screen_shot_path)
+    return ret
+
 
 class ImageReadError(Exception):
     """Exception raised for errors in the image reading process."""
