@@ -45,6 +45,14 @@ def scroll(amount):
     pyautogui.scroll(amount)
 
 
+def keep_clicking(button="left"):
+    mouse.press(button)
+
+
+def release_clicking(button="left"):
+    mouse.release(button)
+
+
 def __validate_coordinate(coordinate):
     try:
         x, y = coordinate
