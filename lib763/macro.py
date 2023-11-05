@@ -4,6 +4,7 @@ import cv2
 import mouse
 import keyboard
 import pyautogui
+import pygetwindow as gw
 import numpy as np
 from typing import Union, List, Tuple, Optional
 from lib763.fs import save_str_to_file, rmrf
@@ -387,6 +388,36 @@ def __mask_img(target_picture_path: str, mask_range: Tuple[int, int, int, int]) 
     img = __read_image(target_picture_path)
     img[x1:x2, y1:y2] = 0
     cv2.imwrite(target_picture_path, img)
+    return True
+
+
+def __get_all_window_names():
+    return gw.getAllTitles()
+
+
+def __get_window(name):
+    all_window_name_ls = __get_all_window_names()
+    target_windows = [win for win in all_window_name_ls if name in win.lower()]
+    if len(target_windows) == 0:
+        return
+    return gw.getWindowsWithTitle(target_windows[0])[0]
+
+
+def maximize_window(name):
+    window = __get_window(name)
+    if window == None:
+        return False
+    if not window.isMaximized:
+        window.maximize()
+    return True
+
+
+def minimize_window(name):
+    window = __get_window(name)
+    if window == None:
+        return False
+    if not window.isMinimized:
+        window.minimize()
     return True
 
 
