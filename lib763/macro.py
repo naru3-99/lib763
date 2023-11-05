@@ -391,13 +391,13 @@ def __mask_img(target_picture_path: str, mask_range: Tuple[int, int, int, int]) 
     return True
 
 
-def __get_all_window_names():
+def get_all_window_names():
     return gw.getAllTitles()
 
 
-def __get_window(name):
+def get_window(name):
     target_name = name.lower()
-    all_window_name_ls = __get_all_window_names()
+    all_window_name_ls = get_all_window_names()
     target_windows = [win for win in all_window_name_ls if target_name in win.lower()]
     if len(target_windows) == 0:
         return
@@ -405,7 +405,7 @@ def __get_window(name):
 
 
 def maximize_window(name):
-    window = __get_window(name)
+    window = get_window(name)
     if window == None:
         return False
     if not window.isMaximized:
@@ -414,7 +414,7 @@ def maximize_window(name):
 
 
 def minimize_window(name):
-    window = __get_window(name)
+    window = get_window(name)
     if window == None:
         return False
     if not window.isMinimized:
