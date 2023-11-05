@@ -396,8 +396,9 @@ def __get_all_window_names():
 
 
 def __get_window(name):
+    target_name = name.lower()
     all_window_name_ls = __get_all_window_names()
-    target_windows = [win for win in all_window_name_ls if name in win.lower()]
+    target_windows = [win for win in all_window_name_ls if target_name in win.lower()]
     if len(target_windows) == 0:
         return
     return gw.getWindowsWithTitle(target_windows[0])[0]
