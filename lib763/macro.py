@@ -422,6 +422,18 @@ def minimize_window(name):
     return True
 
 
+def get_active_window():
+    return gw.getActiveWindow()
+
+
+def activate_window(name):
+    window = get_window(name)
+    if window == None:
+        return False
+    if window.isActive:
+        window.activate()
+
+
 class RecordDrag:
     def __init__(self):
         self.drag_record = []
