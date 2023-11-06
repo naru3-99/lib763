@@ -432,6 +432,7 @@ def activate_window(name):
         return False
     if window.isActive:
         window.activate()
+    return False
 
 
 class RecordDrag:
