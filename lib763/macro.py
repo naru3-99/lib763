@@ -144,7 +144,7 @@ def click_coordinate(coordinate: Tuple[int, int], count: int = 1) -> None:
         InvalidCoordinateError: 座標が無効な場合。
     """
     x, y = __validate_coordinate(coordinate)
-    pyautogui.click(x=x, y=y, clicks=count)
+    pyautogui.click(x=x, y=y, clicks=count, interval=0.1)
 
 
 def drag(
@@ -234,7 +234,7 @@ def read_image(path: str):
 def get_image_range(all_img, targ_img) -> Union[Tuple[int, int, int, int], None]:
     result = cv2.matchTemplate(targ_img, all_img, cv2.TM_CCORR_NORMED)
     _, maxVal, _, maxLoc = cv2.minMaxLoc(result)
-    if maxVal > 0.99:
+    if maxVal > 0.98:
         return (
             maxLoc[0],
             maxLoc[1],
@@ -254,7 +254,7 @@ def get_image_coordinate(all_img, targ_img) -> Union[Tuple[int, int], None]:
 def is_image_contained(all_img, targ_img) -> bool:
     result = cv2.matchTemplate(targ_img, all_img, cv2.TM_CCORR_NORMED)
     _, maxVal, _, _ = cv2.minMaxLoc(result)
-    return maxVal > 0.99
+    return maxVal > 0.98
 
 
 def is_image_on_screen(targ_img) -> bool:
