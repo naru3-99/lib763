@@ -26,6 +26,7 @@ except Exception:
     pass
 
 
+# Exceptions
 class ImageReadError(Exception):
     """Exception raised for errors in the image reading process."""
 
@@ -44,27 +45,7 @@ class InvalidCoordinateError(Exception):
     pass
 
 
-def screen_shot(save_path: str = None):
-    """画面全体のスクリーンショットを取得する。
-
-    Args:
-        save_path (Optional[str]): 保存先のファイルパス。指定しない場合は保存しない。
-
-    Returns:
-        Union[None, Image]: 画像オブジェクト。save_pathが指定された場合はNone。
-    """
-    return pyautogui.screenshot(save_path)
-
-
-def alert_box(text):
-    """アラートボックスを表示する。
-
-    Args:
-        text (str): アラートボックスに表示するテキスト。
-    """
-    pyautogui.alert(text)
-
-
+# keyboard functions
 def type_write(words: str) -> None:
     """文字列をタイプする。
 
@@ -84,6 +65,7 @@ def hotkey(*button: str, interval: float = 0.1) -> None:
     pyautogui.hotkey(*button, interval=interval)
 
 
+# mouse functions
 def scroll(amount: int) -> None:
     """マウススクロールをする。
 
@@ -111,23 +93,7 @@ def release_clicking(button: str = "left") -> None:
     mouse.release(button)
 
 
-def move_mouse(coordinate: Tuple[int, int]) -> bool:
-    """マウスポインタを移動する。
-
-    Args:
-        coordinate (Tuple[int, int]): 移動先の座標 (x, y)。
-
-    Returns:
-        bool: 座標が有効な場合はTrue、それ以外はFalse。
-    """
-    try:
-        x, y = coordinate
-    except ValueError:
-        return False
-    pyautogui.moveTo(x=x, y=y)
-    return True
-
-
+# coordinate functions
 def __validate_coordinate(coordinate: Tuple[int, int]) -> Tuple[int, int]:
     """座標が有効かどうかを検証する。
 
@@ -151,19 +117,20 @@ def __validate_coordinate(coordinate: Tuple[int, int]) -> Tuple[int, int]:
     return x, y
 
 
-def image_range_to_coordinate(img_range: Tuple[int, int, int, int]) -> Tuple[int, int]:
-    """画像範囲から中心座標を計算する。
+def move_mouse(coordinate: Tuple[int, int]) -> bool:
+    """マウスポインタを移動する。
 
     Args:
-        img_range (Tuple[int, int, int, int]): 画像の左上と右下の座標 (x1, y1, x2, y2)。
+        coordinate (Tuple[int, int]): 移動先の座標 (x, y)。
 
     Returns:
-        Tuple[int, int]: 画像の中心座標 (x, y)。
+        bool: 座標が有効な場合はTrue、それ以外はFalse。
+
+    Raises:
+        InvalidCoordinateError: 座標が無効な場合。
     """
-    return (
-        int((img_range[0] + img_range[2]) / 2),
-        int((img_range[1] + img_range[3]) / 2),
-    )
+    x, y = __validate_coordinate(coordinate)
+    pyautogui.moveTo(x=x, y=y)
 
 
 def click_coordinate(coordinate: Tuple[int, int], count: int = 1) -> None:
@@ -178,23 +145,6 @@ def click_coordinate(coordinate: Tuple[int, int], count: int = 1) -> None:
     """
     x, y = __validate_coordinate(coordinate)
     pyautogui.click(x=x, y=y, clicks=count)
-
-
-def click_image(img_path: str, count: int = 1) -> bool:
-    """画像に対応する座標をクリックする。
-
-    Args:
-        img_path (str): クリック対象の画像のパス。
-        count (int, optional): クリック回数。 Defaults to 1。
-
-    Returns:
-        bool: クリックが成功した場合はTrue。
-    """
-    coordinate = get_image_coordinate_on_screen(img_path)
-    if coordinate is None:
-        return False
-    click_coordinate(coordinate, count=count)
-    return True
 
 
 def drag(
@@ -247,150 +197,113 @@ def drag(
         release_clicking(button="left")
 
 
-def __read_image(path: str):
-    """指定されたパスから画像を読み込む"""
+def image_range_to_coordinate(img_range: Tuple[int, int, int, int]) -> Tuple[int, int]:
+    """画像範囲から中心座標を計算する。
+
+    Args:
+        img_range (Tuple[int, int, int, int]): 画像の左上と右下の座標 (x1, y1, x2, y2)。
+
+    Returns:
+        Tuple[int, int]: 画像の中心座標 (x, y)。
+    """
+    return (
+        int((img_range[0] + img_range[2]) / 2),
+        int((img_range[1] + img_range[3]) / 2),
+    )
+
+
+# image functions
+def screen_shot(save_path: str = None):
+    # PIL形式のスクリーンショットを取得
+    pil_image = pyautogui.screenshot()
+    if save_path is not None:
+        # 指定されたパスに保存
+        pil_image.save(save_path)
+
+    # PIL画像をnumpyの配列に変換し、色の順番をBGRに変換して返す
+    return np.array(pil_image)[:, :, ::-1]
+
+
+
+def read_image(path: str):
     img = cv2.imread(path)
     if img is None:
         raise ImageReadError(f"Error reading image from path: {path}")
     return img
 
 
-def image_contains(all_picture_path: str, target_picture_path: str) -> bool:
-    """画像が別の画像に含まれているか確認する。
-
-    Args:
-        all_picture_path (str): 全体画像のパス。
-        target_picture_path (str): ターゲット画像のパス。
-
-    Returns:
-        bool: ターゲット画像が全体画像に含まれている場合はTrue。
-    """
-    template = __read_image(all_picture_path)
-    image = __read_image(target_picture_path)
-    result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
-    _, maxVal, _, _ = cv2.minMaxLoc(result)
-    return maxVal > 0.99
-
-
-def is_image_on_screen(target_picture_path: str) -> bool:
-    """ターゲット画像がスクリーンに表示されているか確認する。
-
-    Args:
-        target_picture_path (str): ターゲット画像のパス。
-
-    Returns:
-        bool: ターゲット画像がスクリーンに表示されている場合はTrue。
-    """
-    screen_shot_path = "./screenshot.png"
-    screen_shot(screen_shot_path)
-    ret = image_contains(screen_shot_path, target_picture_path)
-    rmrf(screen_shot_path)
-    return ret
-
-
-def get_image_coordinate(
-    all_picture_path: str, target_picture_path: str
-) -> Union[Tuple[int, int], None]:
-    """ターゲット画像の座標を取得する。
-
-    Args:
-        all_picture_path (str): 全体画像のパス。
-        target_picture_path (str): ターゲット画像のパス。
-
-    Returns:
-        Union[Tuple[int, int], None]: ターゲット画像の座標（ターゲット画像が全体画像に含まれない場合はNone）。
-    """
-    image_range = get_image_range(all_picture_path, target_picture_path)
-    if image_range is None:
-        return None
-    return image_range_to_coordinate(image_range)
-
-
-def get_image_range(
-    all_picture_path: str, target_picture_path: str
-) -> Union[Tuple[int, int, int, int], None]:
-    """ターゲット画像の範囲（座標）を取得する。
-
-    Args:
-        all_picture_path (str): 全体画像のパス。
-        target_picture_path (str): ターゲット画像のパス。
-
-    Returns:
-        Union[Tuple[int, int, int, int], None]: ターゲット画像の範囲（ターゲット画像が全体画像に含まれない場合はNone）。
-    """
-    template = __read_image(all_picture_path)
-    image = __read_image(target_picture_path)
-    result = cv2.matchTemplate(image, template, cv2.TM_CCORR_NORMED)
+def get_image_range(all_img, targ_img) -> Union[Tuple[int, int, int, int], None]:
+    result = cv2.matchTemplate(targ_img, all_img, cv2.TM_CCORR_NORMED)
     _, maxVal, _, maxLoc = cv2.minMaxLoc(result)
     if maxVal > 0.99:
         return (
             maxLoc[0],
             maxLoc[1],
-            maxLoc[0] + image.shape[1],
-            maxLoc[1] + image.shape[0],
+            maxLoc[0] + targ_img.shape[1],
+            maxLoc[1] + targ_img.shape[0],
         )
     return None
 
 
-def get_image_coordinate_on_screen(
-    target_picture_path: str,
-) -> Union[Tuple[int, int], None]:
-    """スクリーン上のターゲット画像の座標を取得する。
-
-    Args:
-        target_picture_path (str): ターゲット画像のパス。
-
-    Returns:
-        Union[Tuple[int, int], None]: ターゲット画像の座標（スクリーンに表示されていない場合はNone）。
-    """
-    screen_shot_path = "./screenshot.png"
-    screen_shot(screen_shot_path)
-    ret = get_image_coordinate(screen_shot_path, target_picture_path)
-    rmrf(screen_shot_path)
-    return ret
+def get_image_coordinate(all_img, targ_img) -> Union[Tuple[int, int], None]:
+    image_range = get_image_range(all_img, targ_img)
+    if image_range is None:
+        return None
+    return image_range_to_coordinate(image_range)
 
 
-def get_all_coordinate_on_screen(target_picture_path: str) -> List[Tuple[int, int]]:
-    """スクリーン上でターゲット画像が現れるすべての座標を取得する。
+def is_image_contained(all_img, targ_img) -> bool:
+    result = cv2.matchTemplate(targ_img, all_img, cv2.TM_CCORR_NORMED)
+    _, maxVal, _, _ = cv2.minMaxLoc(result)
+    return maxVal > 0.99
 
-    Args:
-        target_picture_path (str): ターゲット画像のパス。
 
-    Returns:
-        List[Tuple[int, int]]: ターゲット画像の座標のリスト。
-    """
+def is_image_on_screen(targ_img) -> bool:
+    return is_image_contained(screen_shot(), targ_img)
+
+
+def get_image_coordinate_on_screen(targ_img) -> Union[Tuple[int, int], None]:
+    return get_image_coordinate(screen_shot(), targ_img)
+
+
+def get_all_coordinate_on_screen(targ_img) -> List[Tuple[int, int]]:
     ret_ls = []
-    screen_shot_path = "./screenshot.png"
-    screen_shot(screen_shot_path)
+    scshot = screen_shot()
     while True:
-        img_range = get_image_range(screen_shot_path, target_picture_path)
+        img_range = get_image_range(scshot, targ_img)
         if img_range is None:
-            rmrf(screen_shot_path)
             return ret_ls
         ret_ls.append(image_range_to_coordinate(img_range))
-        __mask_img(screen_shot_path, img_range)
+        __mask_img(scshot, img_range)
 
 
-def __mask_img(target_picture_path: str, mask_range: Tuple[int, int, int, int]) -> bool:
-    """画像から特定の範囲をマスクする（黒く塗りつぶす）。
-
-    Args:
-        target_picture_path (str): 対象の画像のパス。
-        mask_range (Tuple[int, int, int, int]): マスクする範囲。
-
-    Returns:
-        bool: マスクが成功した場合はTrue。
-    """
+def __mask_img(targ_img, mask_range: Tuple[int, int, int, int]) -> bool:
     try:
         x1, y1, x2, y2 = mask_range
     except:
         return False
-    img = __read_image(target_picture_path)
-    img[x1:x2, y1:y2] = 0
-    cv2.imwrite(target_picture_path, img)
+    targ_img[x1:x2, y1:y2] = 0
+    return targ_img
+
+
+def click_image_on_screen(img_path: str, count: int = 1) -> bool:
+    targ_img = read_image(img_path)
+    coordinate = get_image_coordinate_on_screen(targ_img)
+    if coordinate is None:
+        return False
+    click_coordinate(coordinate, count=count)
     return True
 
 
+def click_image(targ_img, screen_shot, count: int = 1) -> bool:
+    coordinate = get_image_coordinate(screen_shot, targ_img)
+    if coordinate is None:
+        return False
+    click_coordinate(coordinate, count=count)
+    return True
+
+
+# window functions
 def get_all_window_names():
     return gw.getAllTitles()
 
@@ -433,6 +346,16 @@ def activate_window(name):
     if window.isActive:
         window.activate()
     return True
+
+
+# other functions
+def alert_box(text):
+    """アラートボックスを表示する。
+
+    Args:
+        text (str): アラートボックスに表示するテキスト。
+    """
+    pyautogui.alert(text)
 
 
 class RecordDrag:
