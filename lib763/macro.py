@@ -224,7 +224,6 @@ def screen_shot(save_path: str = None):
     return np.array(pil_image)[:, :, ::-1]
 
 
-
 def read_image(path: str):
     img = cv2.imread(path)
     if img is None:
@@ -286,13 +285,20 @@ def __mask_img(targ_img, mask_range: Tuple[int, int, int, int]) -> bool:
     return targ_img
 
 
-def click_image_on_screen(img_path: str, count: int = 1) -> bool:
-    targ_img = read_image(img_path)
+def click_image_on_screen(targ_img, count: int = 1) -> bool:
     coordinate = get_image_coordinate_on_screen(targ_img)
     if coordinate is None:
         return False
     click_coordinate(coordinate, count=count)
     return True
+
+
+def wait_and_click_image_on_screen(targ_img, count: int = 1):
+    while True:
+        if is_image_on_screen(targ_img):
+            break
+        time.sleep(1)
+    click_image_on_screen(targ_img, count)
 
 
 def click_image(targ_img, screen_shot, count: int = 1) -> bool:
