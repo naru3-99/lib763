@@ -75,6 +75,10 @@ def scroll(amount: int) -> None:
     pyautogui.scroll(amount)
 
 
+def click(amount: int) -> None:
+    pyautogui.click(clicks=amount, interval=0.25)
+
+
 def keep_clicking(button: str = "left") -> None:
     """マウスボタンを押し続ける。
 
@@ -143,8 +147,10 @@ def click_coordinate(coordinate: Tuple[int, int], count: int = 1) -> None:
     Raises:
         InvalidCoordinateError: 座標が無効な場合。
     """
-    x, y = __validate_coordinate(coordinate)
-    pyautogui.click(x=x, y=y, clicks=count, interval=0.1)
+    crd = __validate_coordinate(coordinate)
+    move_mouse(crd)
+    time.sleep(0.25)
+    click(count)
 
 
 def drag(
