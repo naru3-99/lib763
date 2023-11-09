@@ -298,6 +298,7 @@ def wait_and_click_image_on_screen(targ_img, count: int = 1):
         if is_image_on_screen(targ_img):
             break
         time.sleep(1)
+    time.sleep(0.5)
     click_image_on_screen(targ_img, count)
 
 
