@@ -621,3 +621,17 @@ def extract_specific_files(
                     zip_ref.extract(matched_file, path)
             else:
                 print(f"{target_file} is not found in the zip file.")
+
+
+def count_files_in_directory(directory_path: str) -> int:
+    """指定されたディレクトリ内のファイル数を効率的にカウントします。
+
+    Args:
+        directory_path (str): ファイル数をカウントするディレクトリのパス。
+
+    Returns:
+        int: ディレクトリ内のファイル数。
+    """
+    with os.scandir(directory_path) as entries:
+        file_count = sum(1 for entry in entries if entry.is_file())
+    return file_count
