@@ -74,15 +74,3 @@ def contains_substring(input_string: str, substring: str) -> bool:
     """
     pattern = re.escape(substring)
     return re.search(pattern, input_string) is not None
-
-
-def mold_copied_eng_paper(text):
-    text1 = re.sub(r"-[\r\n]+", "", text)
-    text2 = re.sub(r"[\r\n]+[\r\n]+", " ", text1)
-    text3 = re.sub(r"[\r\n]+", " ", text2)
-    return text3
-
-
-def mold_eng_from_clipboard():
-    text = paste()
-    copy(mold_copied_eng_paper(text))
