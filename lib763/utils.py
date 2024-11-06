@@ -12,7 +12,7 @@ def mold_copied_eng_paper(text):
         str: The formatted text with unnecessary hyphens and newlines removed.
     """
     text1 = re.sub(r"-[\r\n]+", "", text)
-    text2 = re.sub(r"[\r\n]+[\r\n]+", " ", text1)
+    text2 = re.sub(r"[\r\n]+[\r\n]+", "\n", text1)
     text3 = re.sub(r"[\r\n]+", " ", text2)
     return text3
 
