@@ -10,7 +10,7 @@ setup(
         "paramiko",
         "scp",
         "chardet",
-        "opencv-python",  # cv2 is provided by opencv-python
+        "opencv-python",
         "keyboard",
         "mouse",
         "pyperclip",
@@ -18,5 +18,6 @@ setup(
         "pygetwindow",
         "requests",
         "tqdm",
+        "pytest",
     ],
 )

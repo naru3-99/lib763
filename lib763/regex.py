@@ -1,6 +1,5 @@
 import re
 from typing import Dict, Pattern, List
-from pyperclip import copy, paste
 
 # 数字に一致するパターン
 PATTERN_DIGIT = r"\d"
